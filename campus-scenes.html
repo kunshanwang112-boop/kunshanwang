@@ -1,0 +1,1919 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>产数终端校园场景解决方案</title>
+<style>
+/* ===== 全局变量 ===== */
+:root{
+  --ctc-red:#e4002b;
+  --ctc-red-dark:#b8001f;
+  --ctc-red-light:#ff5570;
+  --bg-dark:#0a0e27;
+  --bg-card:#111738;
+  --bg-card-hover:#161e44;
+  --border-color:#1e2a5a;
+  --text-primary:#e8ecf5;
+  --text-secondary:#8892b0;
+  --text-accent:#64ffda;
+  --text-gold:#ffd700;
+  --text-green:#00e676;
+  --text-orange:#ff9100;
+  --gradient-1:linear-gradient(135deg,#e4002b 0%,#ff5570 100%);
+  --gradient-2:linear-gradient(135deg,#1a237e 0%,#0d47a1 100%);
+  --gradient-3:linear-gradient(135deg,#00695c 0%,#00bfa5 100%);
+  --gradient-card:linear-gradient(135deg,rgba(17,23,56,0.95) 0%,rgba(22,30,68,0.95) 100%);
+  --shadow-glow:0 0 20px rgba(228,0,43,0.15);
+  --shadow-card:0 4px 24px rgba(0,0,0,0.3);
+  --radius:12px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Segoe UI','Microsoft YaHei','PingFang SC',sans-serif;
+  background:var(--bg-dark);
+  color:var(--text-primary);
+  line-height:1.6;
+  overflow-x:hidden;
+}
+/* 滚动条 */
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-track{background:var(--bg-dark);}
+::-webkit-scrollbar-thumb{background:var(--border-color);border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:var(--ctc-red);}
+
+/* ===== 导航栏 ===== */
+.nav-bar{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  height:60px;
+  background:rgba(10,14,39,0.95);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border-color);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 32px;
+}
+.nav-logo{
+  display:flex;align-items:center;gap:10px;
+  font-size:18px;font-weight:700;color:var(--text-primary);
+}
+.nav-logo .logo-icon{
+  width:36px;height:36px;border-radius:8px;
+  background:var(--gradient-1);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;color:#fff;
+  box-shadow:var(--shadow-glow);
+}
+.nav-logo .logo-text span{color:var(--ctc-red);}
+.nav-tabs{display:flex;gap:4px;}
+.nav-tab{
+  padding:8px 24px;border-radius:8px;cursor:pointer;
+  font-size:15px;font-weight:500;color:var(--text-secondary);
+  transition:all .3s ease;border:none;background:none;
+}
+.nav-tab:hover{color:var(--text-primary);background:rgba(255,255,255,0.05);}
+.nav-tab.active{
+  color:#fff;background:var(--gradient-1);
+  box-shadow:var(--shadow-glow);
+}
+.nav-info{font-size:13px;color:var(--text-secondary);}
+.nav-info span{color:var(--text-accent);}
+
+/* ===== 页面容器 ===== */
+.page{display:none;padding-top:80px;min-height:100vh;}
+.page.active{display:block;animation:fadeIn .5s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+/* ===== Hero区域 ===== */
+.hero{
+  position:relative;
+  padding:32px 32px 24px;
+  background:radial-gradient(ellipse at top,rgba(228,0,43,0.08) 0%,transparent 50%);
+}
+.hero h1{
+  font-size:32px;font-weight:800;
+  background:linear-gradient(135deg,#fff 0%,var(--ctc-red-light) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  margin-bottom:8px;
+}
+.hero p{font-size:14px;color:var(--text-secondary);max-width:800px;}
+.hero-stats{
+  display:flex;gap:24px;margin-top:20px;flex-wrap:wrap;
+}
+.hero-stat{
+  background:var(--bg-card);border:1px solid var(--border-color);
+  border-radius:var(--radius);padding:12px 20px;
+  display:flex;flex-direction:column;gap:4px;
+  min-width:140px;
+  position:relative;cursor:pointer;
+  transition:border-color .3s,box-shadow .3s;
+}
+/* 注意：不使用 transform，避免创建层叠上下文导致弹层层级被困 */
+.hero-stat:hover{border-color:var(--ctc-red);box-shadow:0 8px 24px rgba(228,0,43,0.25);}
+.hero-stat .stat-value{font-size:28px;font-weight:800;color:var(--text-accent);}
+.hero-stat .stat-label{font-size:12px;color:var(--text-secondary);}
+.hero-stat.red .stat-value{color:var(--ctc-red-light);}
+.hero-stat.gold .stat-value{color:var(--text-gold);}
+.hero-stat.green .stat-value{color:var(--text-green);}
+/* 统计数字弹出层：亮色高对比底 + 置顶（改为 body 级浮层，由 JS 定位） */
+.stat-pop{
+  position:fixed;left:0;top:0;
+  width:360px;max-height:min(420px, calc(100vh - 40px));overflow-y:auto;
+  background:linear-gradient(180deg,#ffffff 0%,#f2f6ff 100%);
+  border:2px solid #e4002b;
+  border-radius:14px;padding:18px 20px;
+  box-shadow:0 24px 64px rgba(0,0,0,0.55),0 0 24px rgba(228,0,43,0.35);
+  opacity:0;visibility:hidden;transition:opacity .22s ease,visibility .22s ease;
+  z-index:1200;text-align:left;
+  pointer-events:none;
+  color:#232a4d;
+}
+/* 悬停时全屏压暗遮罩，突出弹层 */
+.pop-mask{
+  position:fixed;inset:0;z-index:1100;
+  background:rgba(0,0,0,0.55);
+  opacity:0;visibility:hidden;transition:opacity .22s ease,visibility .22s ease;
+  pointer-events:none;
+}
+.hero-stat:hover .stat-pop,.hero-stat.show .stat-pop{
+  opacity:1;visibility:visible;
+}
+.hero-stat:hover ~ .pop-mask, .hero-stat.show ~ .pop-mask,
+body.has-stat-pop .pop-mask{
+  opacity:1;visibility:visible;
+}
+.stat-pop::before{
+  content:'';position:absolute;top:-10px;left:50%;transform:translateX(-50%) rotate(45deg);
+  width:18px;height:18px;background:#ffffff;border-left:2px solid #e4002b;border-top:2px solid #e4002b;
+}
+.stat-pop .pop-title{font-size:15px;font-weight:700;color:#c4002b;margin-bottom:12px;letter-spacing:.5px;}
+.stat-pop .pop-item{font-size:13.5px;color:#2a3157;padding:7px 0 7px 18px;position:relative;line-height:1.8;}
+.stat-pop .pop-item::before{content:'';position:absolute;left:0;top:14px;width:7px;height:7px;border-radius:50%;background:#e4002b;box-shadow:0 0 6px rgba(228,0,43,0.6);}
+.stat-pop .pop-item strong{color:#b40022;}
+.stat-pop .pop-item .tag-need2{color:#d95a1a;}
+.stat-pop .pop-item .sub{display:block;color:#6b7590;font-size:12.5px;margin-top:3px;}
+
+/* ===== 工具栏 ===== */
+.toolbar{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  padding:0 32px;margin-bottom:16px;
+}
+.search-box{
+  position:relative;flex:1;min-width:260px;max-width:400px;
+}
+.search-box input{
+  width:100%;height:40px;
+  background:var(--bg-card);border:1px solid var(--border-color);
+  border-radius:8px;padding:0 16px 0 40px;
+  color:var(--text-primary);font-size:14px;
+  transition:border-color .3s;
+}
+.search-box input:focus{outline:none;border-color:var(--ctc-red);}
+.search-box::before{
+  content:'\1F50D';position:absolute;left:12px;top:50%;transform:translateY(-50%);
+  font-size:16px;
+}
+.toolbar-btn{
+  height:40px;padding:0 16px;border-radius:8px;
+  background:var(--bg-card);border:1px solid var(--border-color);
+  color:var(--text-primary);font-size:14px;cursor:pointer;
+  display:flex;align-items:center;gap:6px;
+  transition:all .3s;
+}
+.toolbar-btn:hover{border-color:var(--ctc-red);background:var(--bg-card-hover);}
+.toolbar-btn.primary{background:var(--gradient-1);border:none;color:#fff;}
+.toolbar-btn.primary:hover{box-shadow:var(--shadow-glow);}
+.filter-chip{
+  height:40px;padding:0 16px;border-radius:20px;
+  background:var(--bg-card);border:1px solid var(--border-color);
+  color:var(--text-secondary);font-size:13px;cursor:pointer;
+  transition:all .3s;
+}
+.filter-chip:hover{color:var(--text-primary);}
+.filter-chip.active{background:var(--gradient-1);color:#fff;border:none;}
+
+/* ===== 数据表格 ===== */
+.table-wrapper{
+  padding:0 32px 32px;
+  overflow-x:auto;
+  overflow-y:auto;
+  max-height:72vh;
+  position:relative;
+  scrollbar-gutter:stable;
+}
+.data-table{
+  width:100%;border-collapse:separate;border-spacing:0;
+  font-size:13px;min-width:1600px;
+}
+.data-table thead th{
+  background:var(--bg-card);border-bottom:2px solid var(--ctc-red);
+  padding:14px 12px;text-align:left;font-weight:700;
+  color:var(--text-primary);white-space:nowrap;
+  position:sticky;top:0;z-index:10;
+  cursor:pointer;user-select:none;
+}
+.data-table thead th:hover{background:var(--bg-card-hover);}
+.data-table thead th .sort-icon{margin-left:4px;font-size:11px;opacity:0.5;}
+.data-table tbody td{
+  padding:12px;border-bottom:1px solid var(--border-color);
+  vertical-align:top;color:var(--text-secondary);
+  max-width:320px;
+}
+.data-table tbody tr{transition:background .3s;}
+.data-table tbody tr:hover{background:rgba(228,0,43,0.05);}
+.data-table tbody tr:hover td{color:var(--text-primary);}
+
+/* 表格内特殊样式 */
+.cell-scene{
+  font-weight:700;color:var(--text-primary);
+}
+.cell-scene .scene-icon{margin-right:4px;}
+.cell-link a{
+  color:var(--text-accent);text-decoration:none;
+  border-bottom:1px dashed transparent;
+  transition:border-color .3s;
+}
+.cell-link a:hover{border-color:var(--text-accent);}
+.cell-tag{
+  display:inline-block;padding:2px 8px;border-radius:4px;
+  font-size:11px;font-weight:500;margin:2px;
+}
+.tag-have{background:rgba(0,230,118,0.15);color:var(--text-green);border:1px solid rgba(0,230,118,0.3);}
+.tag-need{background:rgba(255,145,0,0.15);color:var(--text-orange);border:1px solid rgba(255,145,0,0.3);}
+.tag-edu{background:rgba(100,255,218,0.15);color:var(--text-accent);border:1px solid rgba(100,255,218,0.3);}
+.tag-red{background:rgba(228,0,43,0.15);color:var(--ctc-red-light);border:1px solid rgba(228,0,43,0.3);}
+.cell-price{font-weight:700;color:var(--text-gold);white-space:nowrap;}
+.cell-edit{
+  outline:none;
+}
+.cell-edit:focus{
+  background:rgba(228,0,43,0.08);
+  box-shadow:0 0 0 2px rgba(228,0,43,0.3);
+  border-radius:4px;
+}
+
+/* 单元格悬停显示全部内容 tooltip（配合JS全局浮层） */
+.td-tip{cursor:help;}
+/* 长文本单元格截断显示 */
+.cell-clip-inner{
+  max-width:280px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  display:-webkit-box;
+  -webkit-line-clamp:3;
+  -webkit-box-orient:vertical;
+  word-break:break-word;
+}
+
+/* ===== 研究规划页卡片 ===== */
+.planning-container{padding:0 32px 32px;}
+.planning-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:20px;
+}
+.planning-card{
+  background:var(--gradient-card);
+  border:1px solid var(--border-color);
+  border-radius:var(--radius);
+  padding:24px;
+  box-shadow:var(--shadow-card);
+  transition:transform .3s,box-shadow .3s;
+}
+.planning-card:hover{
+  transform:translateY(-2px);
+  box-shadow:0 8px 32px rgba(0,0,0,0.4),0 0 16px rgba(228,0,43,0.1);
+}
+.planning-card.full{grid-column:1/-1;}
+.planning-card-header{
+  display:flex;align-items:center;gap:12px;margin-bottom:16px;
+  padding-bottom:12px;border-bottom:1px solid var(--border-color);
+}
+.planning-card-icon{
+  width:40px;height:40px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;flex-shrink:0;
+}
+.planning-card-title{font-size:18px;font-weight:700;color:var(--text-primary);}
+.planning-card-subtitle{font-size:12px;color:var(--text-secondary);margin-top:2px;}
+.planning-content{font-size:14px;color:var(--text-secondary);line-height:1.8;}
+.planning-content strong{color:var(--text-primary);}
+.planning-content ul{list-style:none;padding:0;}
+.planning-content li{
+  padding:4px 0 4px 16px;position:relative;
+}
+.planning-content li::before{
+  content:'';position:absolute;left:0;top:12px;
+  width:6px;height:6px;border-radius:50%;background:var(--ctc-red);
+}
+.planning-content li.green::before{background:var(--text-green);}
+.planning-content li.gold::before{background:var(--text-gold);}
+.planning-content li.accent::before{background:var(--text-accent);}
+.planning-content li.orange::before{background:var(--text-orange);}
+
+/* SWOT */
+.swot-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.swot-box{
+  border-radius:10px;padding:16px;
+  border:1px solid;
+}
+.swot-box h4{font-size:14px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.swot-box ul{list-style:none;padding:0;}
+.swot-box li{font-size:12px;padding:3px 0 3px 12px;position:relative;line-height:1.5;}
+.swot-box li::before{content:'';position:absolute;left:0;top:8px;width:4px;height:4px;border-radius:50%;}
+.swot-s{background:rgba(0,230,118,0.08);border-color:rgba(0,230,118,0.3);}
+.swot-s h4{color:var(--text-green);}
+.swot-s li::before{background:var(--text-green);}
+.swot-w{background:rgba(255,145,0,0.08);border-color:rgba(255,145,0,0.3);}
+.swot-w h4{color:var(--text-orange);}
+.swot-w li::before{background:var(--text-orange);}
+.swot-o{background:rgba(100,255,218,0.08);border-color:rgba(100,255,218,0.3);}
+.swot-o h4{color:var(--text-accent);}
+.swot-o li::before{background:var(--text-accent);}
+.swot-t{background:rgba(228,0,43,0.08);border-color:rgba(228,0,43,0.3);}
+.swot-t h4{color:var(--ctc-red-light);}
+.swot-t li::before{background:var(--ctc-red-light);}
+
+/* 营销月历 */
+.calendar-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px;
+}
+.cal-month{
+  background:rgba(255,255,255,0.03);border:1px solid var(--border-color);
+  border-radius:8px;padding:10px;text-align:center;
+  transition:all .3s;
+}
+.cal-month:hover{border-color:var(--ctc-red);background:rgba(228,0,43,0.05);}
+.cal-month .cal-name{font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:4px;}
+.cal-month .cal-action{font-size:11px;color:var(--text-secondary);line-height:1.4;}
+.cal-month.hot{border-color:var(--ctc-red);}
+.cal-month.hot .cal-name{color:var(--ctc-red-light);}
+
+/* 数据卡片 */
+.data-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border-color);}
+.data-row:last-child{border-bottom:none;}
+.data-row .dr-label{color:var(--text-secondary);font-size:13px;}
+.data-row .dr-value{font-weight:700;color:var(--text-accent);font-size:15px;}
+.data-row .dr-value.red{color:var(--ctc-red-light);}
+.data-row .dr-value.gold{color:var(--text-gold);}
+.data-row .dr-value.green{color:var(--text-green);}
+
+/* 产业格局表 */
+.industry-table{width:100%;border-collapse:collapse;font-size:13px;}
+.industry-table th{
+  background:rgba(228,0,43,0.1);padding:10px;text-align:left;
+  color:var(--text-primary);font-weight:700;border-bottom:1px solid var(--border-color);
+}
+.industry-table td{
+  padding:10px;color:var(--text-secondary);
+  border-bottom:1px solid var(--border-color);
+}
+.industry-table tr:hover td{color:var(--text-primary);}
+
+.toolbar-btn.del-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  height:30px;min-height:30px;line-height:1;
+  padding:0 10px;font-size:12px;white-space:nowrap;
+  background:rgba(228,0,43,0.12);border-color:rgba(228,0,43,0.4);color:var(--ctc-red-light);
+}
+.toolbar-btn.del-btn:hover{background:var(--ctc-red);border-color:var(--ctc-red);color:#fff;}
+.case-link{margin-top:4px;font-size:12px;}
+.case-link a{
+  color:var(--text-accent);text-decoration:none;border-bottom:1px dashed var(--text-accent);
+}
+.case-link a:hover{color:#fff;border-bottom-style:solid;}
+
+/* 导入导出隐藏 */
+#importFile{display:none;}
+
+/* 提示 */
+.toast{
+  position:fixed;top:80px;right:32px;z-index:9999;
+  background:var(--gradient-1);color:#fff;
+  padding:12px 24px;border-radius:8px;
+  font-size:14px;box-shadow:var(--shadow-glow);
+  opacity:0;transform:translateX(20px);
+  transition:all .3s;pointer-events:none;
+}
+.toast.show{opacity:1;transform:translateX(0);}
+
+/* 响应式 */
+@media(max-width:768px){
+  .nav-bar{padding:0 16px;}
+  .nav-info{display:none;}
+  .hero,.toolbar,.table-wrapper,.planning-container{padding-left:16px;padding-right:16px;}
+  .planning-grid{grid-template-columns:1fr;}
+  .calendar-grid{grid-template-columns:repeat(2,1fr);}
+  .hero-stats{flex-direction:column;}
+}
+</style>
+</head>
+<body>
+<!-- 导航栏 -->
+<nav class="nav-bar">
+  <div class="nav-logo">
+    <div class="logo-icon">校</div>
+    <div class="logo-text">产数终端<span>校园场景</span>解决方案</div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchPage('overview')">总览 · 行业洞察</button>
+    <button class="nav-tab" onclick="switchPage('planning')">产数终端产品研究与规划模型</button>
+  </div>
+  <div class="nav-info">数据截至 <span>2026.09</span> · 内部资料</div>
+</nav>
+
+<!-- ========== 第一页：总览 ========== -->
+<div class="page active" id="page-overview">
+  <!-- Hero -->
+  <div class="hero">
+    <h1>产数终端校园场景行业洞察</h1>
+    <p>覆盖普教、高教、职教全学段，从校园安防到AI教学全链路场景，结合天翼电信终端公司已有集采产品目录，识别补齐机会，制定定制化策略。</p>
+    <div class="hero-stats">
+      <div class="hero-stat red">
+        <div class="stat-value">10</div><div class="stat-label">场景大类</div>
+        <div class="stat-pop">
+          <div class="pop-title">10大场景大类</div>
+          <div class="pop-item"><strong>① 校园安防</strong><span class="sub">防欺凌、AI视频监控、门禁访客、智慧消防、实验室安全、防溺水</span></div>
+          <div class="pop-item"><strong>② 智慧教学</strong><span class="sub">电子班牌、智慧黑板、AI录播、常态录播、巡课督导、无感扩音、云课堂、智能阅卷</span></div>
+          <div class="pop-item"><strong>③ 智慧考试</strong><span class="sub">实验AI考试、英语听说、智慧考场</span></div>
+          <div class="pop-item"><strong>④ 智慧体育</strong><span class="sub">体育教学、体质监测、场馆智慧化</span></div>
+          <div class="pop-item"><strong>⑤ 智慧实训</strong><span class="sub">综合平台、医护、汽车、机械、电子、餐饮实训</span></div>
+          <div class="pop-item"><strong>⑥ 智慧后勤</strong><span class="sub">宿舍、食安、放学管理、能耗、停车</span></div>
+          <div class="pop-item"><strong>⑦ 智慧校园</strong><span class="sub">综合平台、一卡通、用印、云会议、数字孪生</span></div>
+          <div class="pop-item"><strong>⑧ 智慧环境</strong><span class="sub">照明、广播、环境监测、智能楼宇</span></div>
+          <div class="pop-item"><strong>⑨ 智慧学习</strong><span class="sub">AI学习终端、图书馆、数字阅读</span></div>
+          <div class="pop-item"><strong>⑩ 幼教特教</strong><span class="sub">晨检接送、幼教课堂、特教辅具、特教康复</span></div>
+        </div>
+      </div>
+      <div class="hero-stat">
+        <div class="stat-value">47</div><div class="stat-label">细分场景方案</div>
+        <div class="stat-pop">
+          <div class="pop-title">47个细分场景方案明细</div>
+          <div class="pop-item"><strong>普教 10个</strong><span class="sub">防欺凌、防溺水、电子班牌、AI录播、常态录播、AI考试、英语听说、体育教学、体质监测、放学管理</span></div>
+          <div class="pop-item"><strong>高教 6个</strong><span class="sub">实验室安全、高教录播/巡课、无感扩音、智慧宿舍、数字孪生、图书馆</span></div>
+          <div class="pop-item"><strong>职教 6个</strong><span class="sub">实训综合平台、医护/汽车/机械/电子/餐饮实训</span></div>
+          <div class="pop-item"><strong>幼教 2个</strong><span class="sub">晨检/接送、智慧课堂</span></div>
+          <div class="pop-item"><strong>特教 2个</strong><span class="sub">智慧辅具、智慧康复</span></div>
+          <div class="pop-item"><strong>通用 21个</strong><span class="sub">AI视频监控、门禁、消防、智慧黑板、云课堂、智能阅卷、考场、场馆、食安、能耗、停车、综合平台、一卡通、用印、云会议、照明、广播、环境监测、楼宇、AI学习、数字阅读</span></div>
+        </div>
+      </div>
+      <div class="hero-stat gold">
+        <div class="stat-value">50+</div><div class="stat-label">已集采产品型号</div>
+        <div class="stat-pop">
+          <div class="pop-title">集采目录覆盖</div>
+          <div class="pop-item">智能学生证 22款（瑞翼/卡尔/博实结/掇月/小书郎等）</div>
+          <div class="pop-item">电子班牌 2款（掇月DYV59/卡尔KTA）</div>
+          <div class="pop-item">教育平板（AOC/希沃/九门状元/纽曼）</div>
+          <div class="pop-item">量子云印章 4款+安全Ukey</div>
+          <div class="pop-item">云会议终端（华为/MAXHUB）、封签机等</div>
+        </div>
+      </div>
+      <div class="hero-stat green">
+        <div class="stat-value">330亿</div><div class="stat-label">AI教育市场规模(2025)</div>
+        <div class="stat-pop">
+          <div class="pop-title">行业规模速览</div>
+          <div class="pop-item">2025年AI教育市场 330亿元（同比+46%）</div>
+          <div class="pop-item">智慧课堂与实训室建设占比 38.7%</div>
+          <div class="pop-item">智慧黑板 280亿元（年增速32%）</div>
+          <div class="pop-item">AI智慧体育 5.38亿元</div>
+          <div class="pop-item">中小学智慧图书馆设备 48亿元</div>
+        </div>
+      </div>
+      <div class="hero-stat">
+        <div class="stat-value">8</div><div class="stat-label">需补齐产品品类</div>
+        <div class="stat-pop">
+          <div class="pop-title">待集采补齐品类（Top3厂商）</div>
+          <div class="pop-item"><strong>AI录播终端</strong>：海康威视、希沃、itc保伦</div>
+          <div class="pop-item"><strong>智慧体育终端</strong>：海康威视、视辰科技、加视科技</div>
+          <div class="pop-item"><strong>校园安防AI超脑</strong>：海康威视、大华、宇视</div>
+          <div class="pop-item"><strong>护眼灯+智能网关</strong>：欧普、雷士、立达信</div>
+          <div class="pop-item"><strong>IP广播终端</strong>：itc保伦、海康威视、迪士普</div>
+          <div class="pop-item"><strong>宿舍/实训AI终端</strong>：海康威视、熵基科技、迈瑞等</div>
+          <div class="pop-item"><strong>实验AI阅卷</strong>：海康威视、捷视科技、中庆教育</div>
+          <div class="pop-item"><strong>消防IoT终端</strong>：中消云、拓深科技等</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 工具栏 -->
+  <div class="toolbar">
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="搜索场景、终端、案例..." oninput="filterTable()">
+    </div>
+    <button class="filter-chip active" onclick="filterByCategory('all',this)">全部分类</button>
+    <button class="filter-chip" onclick="filterByCategory('普教',this)">普教</button>
+    <button class="filter-chip" onclick="filterByCategory('高教',this)">高教</button>
+    <button class="filter-chip" onclick="filterByCategory('职教',this)">职教</button>
+    <button class="filter-chip" onclick="filterByCategory('幼教',this)">幼教</button>
+    <button class="filter-chip" onclick="filterByCategory('特教',this)">特教</button>
+    <button class="filter-chip" onclick="filterByCategory('通用',this)">通用</button>
+    <div style="flex:1"></div>
+    <button class="toolbar-btn" onclick="exportCSV()">📊 导出CSV</button>
+    <button class="toolbar-btn" onclick="exportJSON()">📋 导出JSON</button>
+    <button class="toolbar-btn" onclick="document.getElementById('importFile').click()">📥 导入数据</button>
+    <input type="file" id="importFile" accept=".csv,.json" onchange="importData(event)">
+    <button class="toolbar-btn primary" onclick="addRow()">➕ 新增场景</button>
+  </div>
+
+  <!-- 数据表格 -->
+  <div class="table-wrapper">
+    <table class="data-table" id="dataTable">
+      <thead>
+        <tr>
+          <th onclick="sortTable(0)">编号 <span class="sort-icon">▼</span></th>
+          <th onclick="sortTable(1)">学段 <span class="sort-icon"></span></th>
+          <th onclick="sortTable(2)">场景大类 <span class="sort-icon"></span></th>
+          <th onclick="sortTable(3)">细分场景 <span class="sort-icon"></span></th>
+          <th>场景描述</th>
+          <th>典型案例（点击查看）</th>
+          <th>终端产品</th>
+          <th>终端介绍</th>
+          <th onclick="sortTable(8)">价格区间 <span class="sort-icon"></span></th>
+          <th>配套能力/平台</th>
+          <th>已有产品（集采目录）</th>
+          <th>需补齐产品（Top3厂商）</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ========== 第二页：研究与规划思路 ========== -->
+<div class="page" id="page-planning">
+  <!-- Hero -->
+  <div class="hero">
+    <h1>产数终端产品研究与规划模型</h1>
+    <p>以行业洞察为基、天翼能力为翼，从目标客户、产业格局、电信价值、定制要点、SWOT分析、价格策略、营销策略、预期规模等八大维度，为天翼电信终端公司量身定制"产数终端×智慧校园"战略蓝图。</p>
+    <div class="hero-stats">
+      <div class="hero-stat red">
+        <div class="stat-value">8</div><div class="stat-label">规划维度</div>
+        <div class="stat-pop">
+          <div class="pop-title">战略规划八大维度</div>
+          <div class="pop-item">① 目标客户</div>
+          <div class="pop-item">② 产业格局</div>
+          <div class="pop-item">③ 电信参与价值</div>
+          <div class="pop-item">④ 定制要点</div>
+          <div class="pop-item">⑤ 定制产品SWOT分析</div>
+          <div class="pop-item">⑥ 价格策略</div>
+          <div class="pop-item">⑦ 营销策略（含营销月历）</div>
+          <div class="pop-item">⑧ 预期规模和收入</div>
+        </div>
+      </div>
+      <div class="hero-stat">
+        <div class="stat-value">3</div><div class="stat-label">目标客户群</div>
+        <div class="stat-pop">
+          <div class="pop-title">三大目标客户群</div>
+          <div class="pop-item"><strong>教育主管部门</strong><span class="sub">教育局/教育厅，地市级约350个、区县级约2,800个</span></div>
+          <div class="pop-item"><strong>K12学校</strong><span class="sub">全国约20万所，在校生约1.9亿人</span></div>
+          <div class="pop-item"><strong>高校及职业院校</strong><span class="sub">高校约3,100所、职业院校约1.1万所</span></div>
+        </div>
+      </div>
+      <div class="hero-stat gold">
+        <div class="stat-value">4</div><div class="stat-label">重点定制品类</div>
+        <div class="stat-pop">
+          <div class="pop-title">重点定制品类（聚焦）</div>
+          <div class="pop-item"><strong>智能学生证</strong><span class="sub">22款已集采 → 升级AI防霸凌+墨水屏学习版</span></div>
+          <div class="pop-item"><strong>电子班牌</strong><span class="sub">掇月/卡尔已集采 → 增加AI巡课/无感扩音</span></div>
+          <div class="pop-item"><strong>AI录播终端</strong><span class="sub">需补齐 → 集成观澜类大模型、无感评课</span></div>
+          <div class="pop-item"><strong>智慧体育终端</strong><span class="sub">需补齐 → AI视觉分析+体质监测</span></div>
+        </div>
+      </div>
+      <div class="hero-stat green">
+        <div class="stat-value">12月</div><div class="stat-label">营销月历覆盖</div>
+        <div class="stat-pop">
+          <div class="pop-title">营销月历全年覆盖</div>
+          <div class="pop-item"><strong>1-2月</strong>：寒假改造窗口（安防/照明/广播）</div>
+          <div class="pop-item"><strong>3月</strong>：春季开学季（学生证换新/考勤）</div>
+          <div class="pop-item"><strong>4月</strong>：教育装备展（新品发布/渠道招募）</div>
+          <div class="pop-item"><strong>5月</strong>：中考体育季（智慧体育推广）</div>
+          <div class="pop-item"><strong>6-7月</strong>：暑期改造高峰（全场景大标）</div>
+          <div class="pop-item"><strong>8月</strong>：开学前冲刺（班牌/录播部署）</div>
+          <div class="pop-item"><strong>9月</strong>：秋季开学季（防欺凌/食安）</div>
+          <div class="pop-item"><strong>10-11月</strong>：教育信息化招标（年度预算执行）</div>
+          <div class="pop-item"><strong>12月</strong>：年终冲刺（样板校评选/总结）</div>
+          <div class="pop-item"><strong>全年</strong>：连接费持续+平台订阅收入</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="planning-container">
+    <div class="planning-grid">
+
+      <!-- 1. 目标客户 -->
+      <div class="planning-card">
+        <div class="planning-card-header">
+          <div class="planning-card-icon" style="background:var(--gradient-1);">🎯</div>
+          <div>
+            <div class="planning-card-title">目标客户</div>
+            <div class="planning-card-subtitle">Target Customers</div>
+          </div>
+        </div>
+        <div class="planning-content">
+          <ul>
+            <li class="red"><strong>教育主管部门（教育局/教育厅）</strong>：统筹区域教育信息化建设，关键需求为统一平台、数据上归、安全合规；痛点是系统碎片化、数据孤岛。全国地市级教育局约350个，区县级约2,800个。</li>
+            <li class="gold"><strong>K12学校（普教主力）</strong>：全国中小学校约20万所，在校生约1.9亿人。关键需求为校园安全（防欺凌/安防）、教学提质（智慧课堂/AI录播）、学生管理（考勤/一卡通）。痛点是预算有限、运维能力弱、设备品牌混杂。</li>
+            <li class="green"><strong>高校及职业院校</strong>：全国高校约3,100所，职业院校约1.1万所。关键需求为实验室安全、宿舍管理、实训教学数字化。痛点是多校区管理难、实验室安全隐患大、实训教学围观式低效。</li>
+          </ul>
+          <div style="margin-top:12px;padding:10px;background:rgba(228,0,43,0.05);border-radius:8px;">
+            <strong style="color:var(--ctc-red-light);">市场规模：</strong>2025年中国AI教育全市场规模突破330亿元（同比+46%），其中智慧课堂与实训室建设占比38.7%；智慧黑板市场规模280亿元（年增速32%）；中小学智慧图书馆设备48亿元（增速32%）；AI智慧体育5.38亿元。
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. 产业格局 -->
+      <div class="planning-card">
+        <div class="planning-card-header">
+          <div class="planning-card-icon" style="background:var(--gradient-2);">🏭</div>
+          <div>
+            <div class="planning-card-title">产业格局</div>
+            <div class="planning-card-subtitle">Industry Landscape</div>
+          </div>
+        </div>
+        <div class="planning-content">
+          <table class="industry-table">
+            <tr><th>厂商类型</th><th>代表企业</th><th>核心产品</th><th>优势</th></tr>
+            <tr><td>安防+教育一体化龙头</td><td>海康威视</td><td>AI录播/预警/体育/广播/照明/班牌/消防/智搜</td><td>全场景覆盖、观澜大模型、项目案例多</td></tr>
+            <tr><td>声光电视讯全链路</td><td>itc保伦股份</td><td>智慧黑板/广播/录播/班牌/照明</td><td>全链路自研、服务10万+学校、万间教学空间</td></tr>
+            <tr><td>智慧黑板头部</td><td>希沃（视源）</td><td>交互智能平板/教育平板</td><td>市占率第一、软件生态强、品牌认知高</td></tr>
+            <tr><td>云会议/大屏终端</td><td>华为/MAXHUB</td><td>智慧大屏/云会议终端</td><td>HarmonyOS生态、海思芯片、信创合规</td></tr>
+            <tr><td>智能学生证厂商</td><td>卡尔/瑞翼/博实结/掇月</td><td>卡片式/腕式学生证</td><td>性价比高、已入集采目录、4G+定位+SOS</td></tr>
+            <tr><td>AI教育平台</td><td>豆神教育/科大讯飞</td><td>AI教学/作业批改/学习机</td><td>AI算法能力强、内容资源丰富</td></tr>
+            <tr><td>运营商友商</td><td>中国移动/中国联通</td><td>智慧校园整体方案</td><td>网络+云+终端打包、资金优势</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- 3. 电信价值 -->
+      <div class="planning-card">
+        <div class="planning-card-header">
+          <div class="planning-card-icon" style="background:var(--gradient-3);">💎</div>
+          <div>
+            <div class="planning-card-title">电信参与价值</div>
+            <div class="planning-card-subtitle">China Telecom Value</div>
+          </div>
+        </div>
+        <div class="planning-content">
+          <ul>
+            <li class="accent"><strong>网络连接价值</strong>：5G/4G物联网卡+校园专网，每校年均连接收入3-8万元，全国20万所学校潜在规模60-160亿元/年。</li>
+            <li class="gold"><strong>云网融合价值</strong>：天翼云教育云平台+校园物联网平台，拉动天翼云收入和教育行业DICT项目。</li>
+            <li class="green"><strong>终端拉动价值</strong>：通过集采终端切入校园场景，单校终端采购额5-50万元，带动智能学生证、电子班牌、AI录播等终端上规模。</li>
+            <li class="red"><strong>主业融合价值</strong>：加载翼智教育平台、天翼量子印章/安全Ukey、明厨亮灶云平台等电信业务，实现"终端+平台+应用"一体化交付。</li>
+            <li class="orange"><strong>数据价值</strong>：校园物联数据归集后形成区域教育数据看板，反哺教育局决策，增强客户粘性。</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 4. 定制要点 -->
+      <div class="planning-card">
+        <div class="planning-card-header">
+          <div class="planning-card-icon" style="background:linear-gradient(135deg,#6a1b9a 0%,#9c27b0 100%);">⚙️</div>
+          <div>
+            <div class="planning-card-title">定制要点</div>
+            <div class="planning-card-subtitle">Customization Key Points</div>
+          </div>
+        </div>
+        <div class="planning-content">
+          <ul>
+            <li class="red"><strong>加载电信业务/平台</strong>：
+              <br/>① 翼智教育平台（AI百科问答、心灵树洞、学情报告）
+              <br/>② 天翼云教育云（课程资源存储、在线巡课）
+              <br/>③ 天翼量子印章/安全Ukey（校园用印安全）
+              <br/>④ 明厨亮灶云平台（校园食安监管）
+              <br/>⑤ 5G物联网卡+专网（终端连接管理）
+            </li>
+            <li class="gold"><strong>重点定制品类建议</strong>：
+              <br/>① <span class="cell-tag tag-have">已有</span> 智能学生证（22款已集采）→ 升级AI防霸凌+墨水屏学习版
+              <br/>② <span class="cell-tag tag-have">已有</span> 电子班牌（掇月/卡尔）→ 增加AI巡课/无感扩音
+              <br/>③ <span class="cell-tag tag-need">补齐</span> AI录播终端 → 集成观澜类大模型、无感评课
+              <br/>④ <span class="cell-tag tag-need">补齐</span> 智慧体育终端 → AI视觉分析+体质监测
+              <br/>⑤ <span class="cell-tag tag-need">补齐</span> 校园安防AI超脑 → 视频AI+物联感知
+              <br/>⑥ <span class="cell-tag tag-need">补齐</span> 智慧照明/广播 → IoT网关联动
+            </li>
+            <li class="accent"><strong>配置档位建议</strong>：
+              <br/>- 基础档：4G连接+定位+SOS+考勤（学生证299-369元）
+              <br/>- 标准档：5G+AI防霸凌+一卡通+学习版（学生证349-499元）
+              <br/>- 高端档：墨水屏+AI学习+学情报告（学生证499-699元）
+              <br/>- 班牌档：21.5寸基础版（3000-5000元）/AI增强版（5000-8000元）
+              <br/>- 录播档：常态录播（1.5-3万/间）/AI录播（3-6万/间）
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 5. SWOT分析 -->
+      <div class="planning-card full">
+        <div class="planning-card-header">
+          <div class="planning-card-icon" style="background:linear-gradient(135deg,#bf360c 0%,#e64a19 100%);">📊</div>
+          <div>
+            <div class="planning-card-title">定制产品SWOT分析</div>
+            <div class="planning-card-subtitle">聚焦智能学生证+电子班牌+AI录播三大品类</div>
+          </div>
+        </div>
+        <div class="swot-grid">
+          <div class="swot-box swot-s">
+            <h4>✅ 优势 (Strengths)</h4>
+            <ul>
+              <li>已集采22款智能学生证、2款电子班牌，供应链和渠道已打通</li>
+              <li>中国电信5G/4G网络覆盖全国校园，物联网卡成本优势明显</li>
+              <li>天翼云教育云+翼智教育平台提供差异化AI能力</li>
+              <li>31省分公司政企渠道直达教育局和学校，客户关系深厚</li>
+              <li>集采模式可压降终端成本15-30%，具备价格竞争力</li>
+              <li>量子印章/安全Ukey等自主安全产品形成差异化壁垒</li>
+            </ul>
+          </div>
+          <div class="swot-box swot-w">
+            <h4>⚠️ 劣势 (Weaknesses)</h4>
+            <ul>
+              <li>AI录播/智慧体育/校园安防超脑等核心终端尚未集采，产品线不完整</li>
+              <li>终端品类以学生证/班牌为主，缺乏教学核心终端（智慧黑板/录播）</li>
+              <li>软件平台能力依赖第三方（海康/希沃），自主可控程度不足</li>
+              <li>终端公司产品研发能力弱于专业教育装备厂商</li>
+              <li>缺少行业级AI算法能力（如运动视觉分析、实验操作AI阅卷）</li>
+              <li>品牌认知度在教育行业不如海康/希视/itc等头部厂商</li>
+            </ul>
+          </div>
+          <div class="swot-box swot-o">
+            <h4>🚀 机遇 (Opportunities)</h4>
+            <ul>
+              <li>教育部"AI+教育"行动计划+教育数字化标准WDEAS2026系列持续落地</li>
+              <li>2025年AI教育市场330亿元（+46%），2026年智慧课堂大标密集发布</li>
+              <li>校园防欺凌政策刚性需求，全国推进防霸凌AI设备部署</li>
+              <li>暑期改造窗口+设备换新周期，单校标的从80万升至120万+</li>
+              <li>信创要求利好国产芯片+HarmonyOS终端，电信自主可控优势凸显</li>
+              <li>教育新基建专项债/财政拨款充足，B端预算充裕</li>
+              <li>"双减"后课后服务需求催生AI学习终端新增量</li>
+            </ul>
+          </div>
+          <div class="swot-box swot-t">
+            <h4>⚡ 挑战 (Threats)</h4>
+            <ul>
+              <li>海康威视全场景方案已服务上千所学校，先发优势明显</li>
+              <li>希沃智慧黑板市占率第一，用户使用习惯已形成</li>
+              <li>移动/联通同步布局智慧校园，价格战风险</li>
+              <li>AI教育设备使用率低（周使用率<2次达41.3%），存在"建而不用"风险</li>
+              <li>教育装备采购周期长（6-12个月），回款慢</li>
+              <li>数据安全/隐私保护监管趋严，合规成本上升</li>
+              <li>豆神等AI教育公司收入暴增664%，平台型竞争加剧</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. 价格策略 -->
+      <div class="planning-card">
+        <div class="planning-card-header">
+          <div class="planning-card-icon" style="background:linear-gradient(135deg,#e65100 0%,#ff9100 100%);">💰</div>
+          <div>
+            <div class="planning-card-title">价格策略</div>
+            <div class="planning-card-subtitle">Pricing Strategy</div>
+          </div>
+        </div>
+        <div class="planning-content">
+          <div class="data-row"><span class="dr-label">智能学生证·基础档（无屏/防霸凌）</span><span class="dr-value gold">299-349元</span></div>
+          <div class="data-row"><span class="dr-label">智能学生证·标准档（带屏/AI学习）</span><span class="dr-value gold">349-499元</span></div>
+          <div class="data-row"><span class="dr-label">智能学生证·高端档（墨水屏/AI全功能）</span><span class="dr-value gold">499-699元</span></div>
+          <div class="data-row"><span class="dr-label">电子班牌·基础版（21.5寸）</span><span class="dr-value gold">3,000-5,000元</span></div>
+          <div class="data-row"><span class="dr-label">电子班牌·AI增强版</span><span class="dr-value gold">5,000-8,000元</span></div>
+          <div class="data-row"><span class="dr-label">AI录播·常态化（每间教室）</span><span class="dr-value gold">1.5-3万元</span></div>
+          <div class="data-row"><span class="dr-label">AI录播·精品化（每间教室）</span><span class="dr-value gold">3-6万元</span></div>
+          <div class="data-row"><span class="dr-label">校园安防AI超脑</span><span class="dr-value gold">0.8-2万元/套</span></div>
+          <div class="data-row"><span class="dr-label">智慧照明（每教室12盏）</span><span class="dr-value gold">3,000-6,000元</span></div>
+          <div style="margin-top:12px;padding:10px;background:rgba(228,0,43,0.05);border-radius:8px;font-size:13px;">
+            <strong style="color:var(--ctc-red-light);">定价策略：</strong>对标行业均价下浮15-20%，主打"终端+连接+平台"打包价（如学生证3年合约199元/台+连接费10元/月），通过集采压降BOM成本，省分可灵活配比终端补贴与套餐绑定。
+          </div>
+        </div>
+      </div>
+
+      <!-- 7. 营销策略 -->
+      <div class="planning-card">
+        <div class="planning-card-header">
+          <div class="planning-card-icon" style="background:linear-gradient(135deg,#1b5e20 0%,#43a047 100%);">📈</div>
+          <div>
+            <div class="planning-card-title">营销策略</div>
+            <div class="planning-card-subtitle">Marketing & Go-to-Market</div>
+          </div>
+        </div>
+        <div class="planning-content">
+          <ul>
+            <li class="red"><strong>主业礼包设计</strong>：
+              <br/>① "平安校园礼包"=智能学生证+校园安防AI+5G专网+翼智教育平台
+              <br/>② "智慧课堂礼包"=电子班牌+AI录播+教育云+量子印章
+              <br/>③ "智慧食安礼包"=明厨亮灶云平台+封签机+云打印
+              <br/>④ "智慧体育礼包"=AI视觉终端+体质监测+体育云平台
+            </li>
+            <li class="gold"><strong>渠道策略</strong>：
+              <br/>① 政企渠道：省分公司对接教育厅/局，争取区域统采
+              <br/>② 校长渠道：举办"AI+教育"峰会/样板校参观，校长决策
+              <br/>③ 线上渠道：天翼商城/政企电商上架标准化套餐
+              <br/>④ 生态渠道：与海康/希沃/itc联合方案，互补推广
+            </li>
+            <li class="green"><strong>调动积极性</strong>：
+              <br/>① 终端提成上浮20%（校园场景专项激励）
+              <br/>② 省分PK赛：季度排名+标杆校奖金
+              <br/>③ "样板校"认证：入选省级样板校额外奖励
+              <br/>④ 套餐捆绑考核：连接收入计入省分KPI
+            </li>
+          </ul>
+          <div style="margin-top:12px;">
+            <strong style="color:var(--text-accent);font-size:13px;">📅 营销月历</strong>
+            <div class="calendar-grid">
+              <div class="cal-month hot"><div class="cal-name">1-2月</div><div class="cal-action">寒假改造窗口<br/>安防/照明/广播</div></div>
+              <div class="cal-month"><div class="cal-name">3月</div><div class="cal-action">春季开学季<br/>学生证换新/考勤</div></div>
+              <div class="cal-month"><div class="cal-name">4月</div><div class="cal-action">教育装备展<br/>新品发布/渠道招募</div></div>
+              <div class="cal-month"><div class="cal-name">5月</div><div class="cal-action">中考体育季<br/>智慧体育推广</div></div>
+              <div class="cal-month hot"><div class="cal-name">6-7月</div><div class="cal-action">暑期改造高峰<br/>全场景大标</div></div>
+              <div class="cal-month hot"><div class="cal-name">8月</div><div class="cal-action">开学前冲刺<br/>班牌/录播部署</div></div>
+              <div class="cal-month"><div class="cal-name">9月</div><div class="cal-action">秋季开学季<br/>防欺凌/食安</div></div>
+              <div class="cal-month"><div class="cal-name">10-11月</div><div class="cal-action">教育信息化招标<br/>年度预算执行</div></div>
+              <div class="cal-month hot"><div class="cal-name">12月</div><div class="cal-action">年终冲刺<br/>样板校评选/总结</div></div>
+              <div class="cal-month"><div class="cal-name">全年</div><div class="cal-action">连接费持续<br/>平台订阅收入</div></div>
+              <div class="cal-month"><div class="cal-name">Q1</div><div class="cal-action">省分PK启动<br/>激励政策下达</div></div>
+              <div class="cal-month"><div class="cal-name">Q4</div><div class="cal-action">下年度预算<br/>规划/选型</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 8. 预期规模和收入 -->
+      <div class="planning-card full">
+        <div class="planning-card-header">
+          <div class="planning-card-icon" style="background:var(--gradient-1);">🔮</div>
+          <div>
+            <div class="planning-card-title">预期规模和收入</div>
+            <div class="planning-card-subtitle">基于行业规模、省分摸底和业务目标的预估（2026-2028三年规划）</div>
+          </div>
+        </div>
+        <div class="planning-content">
+          <table class="industry-table">
+            <tr>
+              <th>品类</th><th>目标覆盖学校(所)</th><th>终端出货量(万台)</th><th>终端收入(亿元)</th><th>连接收入(亿元/年)</th><th>平台收入(亿元/年)</th><th>三年合计(亿元)</th>
+            </tr>
+            <tr><td>智能学生证</td><td>50,000</td><td>500</td><td>15.0</td><td>6.0</td><td>1.5</td><td>34.5</td></tr>
+            <tr><td>电子班牌</td><td>20,000</td><td>30</td><td>12.0</td><td>0.6</td><td>0.3</td><td>14.7</td></tr>
+            <tr><td>AI录播终端</td><td>5,000</td><td>5</td><td>15.0</td><td>0.3</td><td>0.5</td><td>19.4</td></tr>
+            <tr><td>校园安防AI</td><td>10,000</td><td>10</td><td>8.0</td><td>0.8</td><td>0.2</td><td>12.0</td></tr>
+            <tr><td>智慧体育终端</td><td>3,000</td><td>3</td><td>2.4</td><td>0.1</td><td>0.1</td><td>2.8</td></tr>
+            <tr><td>智慧照明/广播</td><td>5,000</td><td>—</td><td>2.0</td><td>0.2</td><td>—</td><td>2.6</td></tr>
+            <tr><td>其他（印章/食安等）</td><td>8,000</td><td>—</td><td>1.5</td><td>0.2</td><td>0.2</td><td>2.5</td></tr>
+            <tr style="background:rgba(228,0,43,0.08);"><td style="font-weight:700;color:var(--text-primary);">合计</td><td style="font-weight:700;color:var(--text-primary);">~101,000</td><td style="font-weight:700;color:var(--text-primary);">~548</td><td style="font-weight:700;color:var(--ctc-red-light);">55.9</td><td style="font-weight:700;color:var(--ctc-red-light);">8.2/年</td><td style="font-weight:700;color:var(--ctc-red-light);">2.8/年</td><td style="font-weight:700;color:var(--ctc-red-light);">88.5</td></tr>
+          </table>
+          <div style="margin-top:16px;padding:12px;background:rgba(0,230,118,0.05);border-radius:8px;font-size:13px;">
+            <strong style="color:var(--text-green);">预估依据：</strong>①全国20万所K12+1.1万所职校+3,100所高校，目标覆盖约10万所（渗透率~47%）；②智能学生证按每校100台均量、3年换新周期估算；③连接收入按每台10元/月×12月计算；④参考2025年AI教育330亿市场规模，电信目标份额约8-10%。
+          </div>
+          <div style="margin-top:12px;padding:12px;background:rgba(255,145,0,0.05);border-radius:8px;font-size:13px;">
+            <strong style="color:var(--text-orange);">关键里程碑：</strong>
+            <br/>2026年：完成8款补齐品类终端集采入库，覆盖100所样板校，实现终端收入15亿元；
+            <br/>2027年：规模推广至5,000所学校，终端收入35亿元，连接收入5亿元；
+            <br/>2028年：覆盖10万所学校，三年累计终端+连接+平台收入88.5亿元。
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- 统计卡弹层遮罩 -->
+<div class="pop-mask" id="popMask"></div>
+
+<!-- 提示 -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== 场景数据 =====
+const sceneData = [
+  {
+    id:1,
+    edu:'普教',
+    category:'校园安防',
+    subcategory:'防欺凌预警',
+    desc:'基于防欺凌语音报警设备、AI智能设备等，对校园内欺凌行为进行动态监测，实时预警处置。构建事前安全教育、事中预警处置、事后归档回溯的防欺凌预防监管体系。',
+    cases:'浙江丽水华园中学、浙江遂昌民族中学、宁波市李惠利中学、湖南邵阳隆回县三阁司镇中学等',
+    terminals:'AI防欺凌语音报警器、智能学生证（防霸凌版）',
+    termDesc:'防欺凌报警器：双麦克风设计，20米范围实时语音AI识别"救命、别打我"等关键词并自动报警；学生证集成4G+定位+SOS+AI语音识别',
+    price:'299-1,500元/台',
+    platform:'校园防欺凌预警管理平台（安保/教师端实时接收报警+双向通话+广播远程喊话）',
+    have:'<span class="cell-tag tag-have">已有</span> 瑞翼M19无屏防霸凌学生证(299元)、瑞翼M20带屏防霸凌学生证(349元)',
+    need:'<span class="cell-tag tag-need">补齐</span> AI防欺凌语音报警器（壁挂式）<br/>Top3：海康威视、大华股份、天地伟业'
+  },
+  {
+    id:2,
+    edu:'通用',
+    category:'校园安防',
+    subcategory:'AI视频监控预警',
+    desc:'面向普教学校及教育局安保部门，在传统视频监控基础上进行AI智能化升级，基于超脑/智能应用服务器提供视图算法，实现人员布控、轨迹分析、人车档案、事件中心等智能业务应用。',
+    cases:'成都教科院附属中学（国家级课题试点学校）、杭州春晖小学（全省首个AI预警样板）；浙江交通职业技术学院',
+    terminals:'AI超脑NVR、智能应用服务器、AI智能摄像头、智能应用服务器、AI摄像头、人脸/人体/车辆数据库服务器',
+    termDesc:'AI超脑：支持百路视频AI分析，人员/车辆特征识别、行为检测；智能摄像头：支持人脸/人体/车辆多目标抓拍；智搜：智搜：融合门禁/道闸多维数据，一键获取检索信息；支持智能检索、智能档案、融合线路、线路回放；精细化人车管理',
+    price:'8,000-30,000元/套',
+    platform:'校园AI预警平台（人员布控、轨迹分析、人车档案、事件中心、安全指数）',
+    have:'<span class="cell-tag tag-need">未集采</span> 校园安防AI超脑及智能应用服务器',
+    need:'<span class="cell-tag tag-need">补齐</span> AI超脑NVR+智能应用服务器<br/>Top3：海康威视、大华股份、宇视科技'
+  },
+  {
+    id:3,
+    edu:'通用',
+    category:'校园安防',
+    subcategory:'门禁通道/访客管理',
+    desc:'面向校园出入口与重点区域，通过人脸识别闸机、访客登记终端、智能道闸等设备，实现师生无感通行、外来人员身份核验登记、车辆识别管理，构建"人-车-物"一体化通行管控体系。',
+    cases:'全国多所中小学及高校门禁改造项目',
+    terminals:'人脸识别闸机、访客自助登记终端、智能道闸、门禁控制器',
+    termDesc:'人脸闸机：活体检测+毫秒级识别，支持戴口罩识别；访客终端：身份证读取+人像比对+电子签名；道闸：车牌识别+蓝牙+无感支付',
+    price:'5,000-20,000元/套',
+    platform:'校园通行管理平台（人员通行、访客管理、车辆管理、告警联动）',
+    have:'<span class="cell-tag tag-need">未集采</span> 人脸闸机/访客终端',
+    need:'<span class="cell-tag tag-need">补齐</span> 人脸识别闸机+访客登记终端<br/>Top3：海康威视、大华股份、熵基科技'
+  },
+  {
+    id:4,
+    edu:'通用',
+    category:'校园安防',
+    subcategory:'智慧消防',
+    desc:'以"多维感知、数据共享、业务联动"为理念，综合利用物联网、AI、移动互联网等技术，基于消防系统联网、电气火灾监控、消防用水监控等子系统，提供实时检测、智能预警、系统联动等功能。',
+    cases:'清华大学实验室、西北农林科技大学',
+    terminals:'消防物联终端、电气火灾监控终端、烟感探测器、可燃气体探测器',
+    termDesc:'消防物联：联网监控全设备状态；电气火灾：电压/电流/温度/漏电实时监测；安消联动：摄像头+烟感联合预警',
+    price:'2,000-10,000元/点位',
+    platform:'智慧消防管理平台（实时监测、智能预警、设备巡检、综合管理）',
+    have:'<span class="cell-tag tag-need">未集采</span> 消防物联终端',
+    need:'<span class="cell-tag tag-need">补齐</span> 消防IoT终端套装<br/>Top3：海康威视、中消云、拓深科技'
+  },
+  {
+    id:5,
+    edu:'高教',
+    category:'校园安防',
+    subcategory:'实验室安全',
+    desc:'综合运用物联网、移动互联等技术，围绕"人、机、料、环、管"关键环节，实现实验室安全全流程闭环管控。建立严格准入机制，实验室内操作行为检测，单人在岗/长时间倒地检测。',
+    cases:'东南大学化学/生物实验室、昆明理工大学',
+    terminals:'实验室安全传感器、AI行为分析摄像头、智能门禁、气体检测终端',
+    termDesc:'传感器：气体浓度/电压电流/功率/火点实时监测；AI摄像头：实验服/护目镜检测、违规操作识别；门禁：实验资格准入控制',
+    price:'5,000-20,000元/间',
+    platform:'实验室安全管理平台（准入管理、行为检测、危化品追溯、环境监测）',
+    have:'<span class="cell-tag tag-need">未集采</span> 实验室安全终端',
+    need:'<span class="cell-tag tag-need">补齐</span> 实验室安全AI+IoT终端套装<br/>Top3：海康威视、青软青盾、中科盛华'
+  },
+  {
+    id:6,
+    edu:'普教',
+    category:'校园安防',
+    subcategory:'防溺水/防坠落监测',
+    desc:'面向校园周边水域、楼顶、楼梯间等危险区域，通过AI周界摄像机、电子围栏、声光报警器等设备，实现越界检测、徘徊预警、防溺水智能识别，构建校园周界安全防线。',
+    cases:'浙江省中小学防溺水智能化改造项目',
+    terminals:'AI周界摄像机、电子围栏、声光报警器、防溺水监测终端',
+    termDesc:'周界摄像机：越界/徘徊/人员靠近检测+声光联动；电子围栏：脉冲/张力式，触发即告警；防溺水：水面AI识别+自动报警',
+    price:'3,000-15,000元/套',
+    platform:'校园周界安防管理平台（周界防护、告警联动、巡更管理）',
+    have:'<span class="cell-tag tag-need">未集采</span> 周界安防终端',
+    need:'<span class="cell-tag tag-need">补齐</span> AI周界摄像机+电子围栏<br/>Top3：海康威视、大华股份、拓深科技'
+  },
+  {
+    id:7,
+    edu:'普教',
+    category:'智慧教学',
+    subcategory:'电子班牌',
+    desc:'通过电子班牌终端+云平台的有机结合，实现校园新闻公告发布、走班考勤管理、班级风采、食堂消费、视力检测等应用，打造校园智能应用入口及展示窗口。',
+    cases:'海康威视智慧班牌服务200+城市上千所学校；淄博博山区中心学校、重庆长生桥中学等',
+    terminals:'电子班牌终端（21.5寸触控屏）',
+    termDesc:'21.5寸LCD电容触摸屏，RK3568/RK3288芯片，Android系统，支持刷卡/人脸考勤、通知发布、课程表、宿舍管理',
+    price:'3,000-5,000元/台',
+    platform:'海康云眸云平台/校园管理平台（考勤、通知、请假审批、信息发布）',
+    have:'<span class="cell-tag tag-have">已有</span> 掇月DYV59电子班牌、卡尔KTA电子班牌(4900元)',
+    need:'<span class="cell-tag tag-have">已覆盖</span> 需升级AI巡课/无感扩音集成能力'
+  },
+  {
+    id:8,
+    edu:'通用',
+    category:'智慧教学',
+    subcategory:'智慧教室/智慧黑板',
+    desc:'以智慧黑板/交互大屏为核心，集成显示、触控、计算、物联中控等功能，支持多媒体教学、课堂互动、远程协作。配套教学软件实现备课、授课、互动、评测全流程数字化。',
+    cases:'全国多所学校智慧教室建设项目（希沃/鸿合交互大屏覆盖超10万所学校）；湖南工业大学德比学院智慧教室建设（2026.9中标123万元）；南宁职业技术大学AI赋能智慧教室采购（2026.9）',
+    terminals:'智慧黑板（86/98寸交互平板）、教学一体机、物联中控、无线投屏器',
+    termDesc:'智慧黑板：4K防眩光护眼屏，20/40点触控，内置Android+Windows双系统；物联中控：一键控制灯光/窗帘/空调/门锁；投屏：支持多设备无线投屏',
+    price:'1.5-5万元/间',
+    platform:'智慧教室管理平台（设备管控、教学互动、资源管理、数据分析）',
+    have:'<span class="cell-tag tag-need">未集采</span> 智慧黑板/交互大屏',
+    need:'<span class="cell-tag tag-need">补齐</span> 智慧黑板+物联中控套装<br/>Top3：希沃（视源）、鸿合科技、MAXHUB'
+  },
+  {
+    id:9,
+    edu:'普教',
+    category:'智慧教学',
+    subcategory:'AI录播/无感评课',
+    desc:'AI云眸录播解决方案融合前沿AI技术，以观澜大模型为核心的智慧AI中台，实现采集与深度分析，提供高集成度设备和一站式信息化教学服务，助力学校积累优质校园资源，为教师教研提供数据支撑。',
+    cases:'杭州市第十一中学（全国首批AI无感评课学校）、长沙市雅礼中学；绵阳经开区三江实验学校（2026年度全国智慧教育优秀案例·AI课堂智能评课赋能初中物理教学）',
+    terminals:'AI录播主机、全景/近景摄像机、AI分析服务器、拾音器',
+    termDesc:'AI录播：4K全景+近景自动跟踪，课堂行为分析（提问类型分布、学生专注度曲线、教学风格雷达图）；itc第四代教育录播融合AI跟踪算法+大数据分析+国密算法，从被动记录到主动感知',
+    price:'1.5-6万元/间',
+    platform:'AI云眸录播平台（课程资源管理、教研分析、在线巡课、数据看板）',
+    have:'<span class="cell-tag tag-need">未集采</span> AI录播主机及配套摄像机',
+    need:'<span class="cell-tag tag-need">补齐</span> AI录播终端套装<br/>Top3：海康威视、希沃（视源）、itc保伦'
+  },
+  {
+    id:10,
+    edu:'普教',
+    category:'智慧教学',
+    subcategory:'常态录播/同步课堂',
+    desc:'常态化录播方案部署简单，实现精品录播5画面自动录制。教学设备部署在教学空间实现教学过程录制、巡课等应用，通过网络连接教学平台，进行教学教研管理、课程管理、在线学习。',
+    cases:'厦门市金尚中学、南宁市同步课堂（600间）',
+    terminals:'常态化录播主机、简易录播终端、云台摄像机、全向麦克风',
+    termDesc:'常态录播：5画面自动录制，一键开始/停止；简易录播：轻量化部署，适合日常课堂存档；同步课堂：跨校互动教学',
+    price:'1-3万元/间',
+    platform:'教学平台（课程管理、教研管理、资源管理、在线学习空间）',
+    have:'<span class="cell-tag tag-need">未集采</span> 常态化录播主机及配套',
+    need:'<span class="cell-tag tag-need">补齐</span> 常态录播终端套装<br/>Top3：海康威视、希沃（视源）、itc保伦'
+  },
+  {
+    id:11,
+    edu:'高教',
+    category:'智慧教学',
+    subcategory:'高教录播/巡课督导',
+    desc:'建设常态化录播应用系统，包括常态录播、简易录播、AI录播、精品录播等多样化需求能力，加速学校资源数字化。无感知、全自动、常态化班班录制，快速生成校本资源。 基于先进的视频与传输技术，覆盖基础巡课和AI巡课，采集教室画面声音到应用平台，实现多角色参与、多画面查看的全面巡课，多维数据统计的数智评课。',
+    cases:'中山大学（252间教室）、闽江学院；台州学院（本科教学审核评估典范）、西安电子科技大学',
+    terminals:'精品录播主机、AI摄像机、多屏互动系统、物联中控、音频系统、巡课摄像机、AI分析服务器、巡课管理终端',
+    termDesc:'精品录播：多机位+导播+特效+资源管理；物联中控：教室设备统一管控；多屏互动：小组研讨教学支持；巡课：巡课摄像机：多画面同时采集，支持网页/移动端巡课；AI分析：教学质量诊断、课堂行为分析、教学风格评价',
+    price:'2-6万元/间',
+    platform:'教学录播与督导平台（资源管理、在线巡课、课程直播/点播）（含巡课督导模块）',
+    have:'<span class="cell-tag tag-need">未集采</span> 高教录播终端',
+    need:'<span class="cell-tag tag-need">补齐</span> AI巡课摄像机+分析服务器<br/>Top3：海康威视、希沃、中庆教育'
+  },
+  {
+    id:12,
+    edu:'高教',
+    category:'智慧教学',
+    subcategory:'无感扩音',
+    desc:'自研适配不同教室大小的多阵列麦克风，配合前置扩音处理算法，最大程度保留原始人声，配合指向增益和抑制算法、降噪抗混响和啸叫抑制算法，实现无感扩音效果质的提升。',
+    cases:'华中科技大学阶梯教室、中国科学技术大学先研院',
+    terminals:'多阵列麦克风、扩音处理器、音箱系统',
+    termDesc:'多阵列麦克风：吊装无感拾音，8麦阵列，AGC增益，降噪抗混响；处理器：指向增益+啸叫抑制；8-12m拾音距离',
+    price:'5,000-20,000元/间',
+    platform:'无（独立运行，可选对接教学管理平台）',
+    have:'<span class="cell-tag tag-need">未集采</span> 无感扩音终端',
+    need:'<span class="cell-tag tag-need">补齐</span> 多阵列麦克风+扩音处理器<br/>Top3：海康威视、itc保伦、DSPPA'
+  },
+  {
+    id:13,
+    edu:'通用',
+    category:'智慧教学',
+    subcategory:'云课堂/远程互动',
+    desc:'基于云平台和互动终端，实现跨校区、跨区域远程同步教学。支持主讲教室与听课教室音视频双向互动、屏幕共享、在线答题，促进优质教育资源均衡配置。',
+    cases:'四川省"三个课堂"建设（覆盖数千所学校）、宁夏"在线课堂"',
+    terminals:'互动录播主机、云课堂终端、全向麦克风、交互大屏、云平台',
+    termDesc:'云课堂终端：一键接入远程课堂，支持1对多同步互动；全向麦：360°拾音+回声消除；支持在线答题/弹幕/分组讨论',
+    price:'2-5万元/间',
+    platform:'云课堂管理平台（排课管理、同步教学、在线互动、资源沉淀）',
+    have:'<span class="cell-tag tag-need">未集采</span> 云课堂互动终端',
+    need:'<span class="cell-tag tag-need">补齐</span> 云课堂互动终端+全向麦克风<br/>Top3：希沃、海康威视、itc保伦'
+  },
+  {
+    id:14,
+    edu:'通用',
+    category:'智慧教学',
+    subcategory:'智能阅卷/作业批改',
+    desc:'基于AI OCR识别与自然语言处理技术，实现客观题自动批阅、主观题辅助评分、作业智能批改与学情分析。教师端可快速生成成绩报告与错题归因，大幅降低重复劳动。',
+    cases:'多地教育局智能阅卷系统部署（安徽、山东等省份中考阅卷试点）',
+    terminals:'高速扫描仪、AI阅卷服务器、智能作业终端',
+    termDesc:'扫描仪：双面高速扫描，OMR+OCR混合识别；AI服务器：主观题语义分析+评分建议；作业终端：手写拍照批改+学情画像',
+    price:'5-20万元/套',
+    platform:'智能阅卷管理平台（试卷扫描、AI批阅、成绩分析、错题归因）',
+    have:'<span class="cell-tag tag-need">未集采</span> 智能阅卷终端',
+    need:'<span class="cell-tag tag-need">补齐</span> 高速扫描仪+AI阅卷服务器<br/>Top3：海康威视、科大讯飞、中庆教育'
+  },
+  {
+    id:15,
+    edu:'普教',
+    category:'智慧考试',
+    subcategory:'实验操作AI考试',
+    desc:'理化生实验操作考试AI阅卷系统，AI算法改进评卷规则，从教师双评+专家仲裁优化为AI智能评卷+少量教师仲裁，提高客观性及效率。日常教学中AI实时点评学生操作。',
+    cases:'宁波市教育局（93个考点192个考场，6.7万名考生）、张掖市教育局（22个考点46个考场）',
+    terminals:'实验操作AI摄像机、AI评卷服务器、考试管理终端',
+    termDesc:'AI摄像机：近景360°悬停拍摄学生操作过程；AI服务器：基于视频分析操作正确性、评分；支持实时/延时点评',
+    price:'3-8万元/考场',
+    platform:'实验操作考试管理平台（考务编排、AI阅卷、成绩发布、日常教学辅助）',
+    have:'<span class="cell-tag tag-need">未集采</span> 实验操作AI考试终端',
+    need:'<span class="cell-tag tag-need">补齐</span> AI阅卷摄像机+评卷服务器<br/>Top3：海康威视、捷视科技、中庆教育'
+  },
+  {
+    id:16,
+    edu:'普教',
+    category:'智慧考试',
+    subcategory:'英语听说AI考试',
+    desc:'面向中考/高考英语听说考试场景，通过AI语音识别与评分技术，实现人机对话考试自动评分，覆盖朗读、复述、问答等题型，替代传统人工评分，提升考试公平性与效率。',
+    cases:'广东省中考英语听说考试（全省统一AI评分）、北京市高考听说机考',
+    terminals:'英语听说考试终端、AI语音评分服务器、考试耳机',
+    termDesc:'考试终端：标准化机考环境，音频录制+回放；AI评分：发音准确度/流利度/完整度多维评分；耳机：降噪+统一标准',
+    price:'3-10万元/考场',
+    platform:'英语听说考试管理平台（考务编排、AI评分、成绩发布、申诉复核）',
+    have:'<span class="cell-tag tag-need">未集采</span> 英语听说考试终端',
+    need:'<span class="cell-tag tag-need">补齐</span> 英语听说考试终端+AI评分服务器<br/>Top3：科大讯飞、驰声、清帆科技'
+  },
+  {
+    id:17,
+    edu:'通用',
+    category:'智慧考试',
+    subcategory:'智慧考场/在线监考',
+    desc:'面向标准化考场建设，通过AI摄像头、身份核验终端、信号屏蔽器等设备，实现考生身份核验、考场行为AI分析、作弊预警、信号屏蔽全流程智能化，提升考试安全管控水平。',
+    cases:'全国标准化考场改造项目（多省高考/中考考点）',
+    terminals:'AI监考摄像头、身份核验终端、信号屏蔽器、考场管理终端',
+    termDesc:'AI摄像头：考场行为分析（交头接耳/传递物品/异常姿势）；身份核验：人脸+身份证比对；信号屏蔽：5G/4G/WiFi全频段屏蔽',
+    price:'1-5万元/考场',
+    platform:'智慧考务管理平台（身份核验、行为监控、作弊预警、考务编排）',
+    have:'<span class="cell-tag tag-need">未集采</span> 智慧考场终端',
+    need:'<span class="cell-tag tag-need">补齐</span> AI监考摄像头+信号屏蔽器<br/>Top3：海康威视、大华股份、中庆教育'
+  },
+  {
+    id:18,
+    edu:'普教',
+    category:'智慧体育',
+    subcategory:'智慧体育教学',
+    desc:'校园AI体育系统借助运动视觉分析技术、云计算和大数据分析技术，赋能学校体育工作，满足管理"智能化"、方式"多样化"、评价"公平化"、过程"数字化"和教学分析"精准化"。',
+    cases:'杭州市体育中考测评项目、遵义市智慧体育项目、广州培正中学（全国落地超1000所学校）；奈曼旗第一中学AI智慧体育建设项目（2026.9中标公告）；西峰区义务教育学校AI数字体育设备采购（2026.9招标）',
+    terminals:'AI运动视觉终端、体质监测一体机、智能跳绳终端、体育云平台',
+    termDesc:'AI视觉终端：基于计算机视觉实时分析运动姿态、计数、评分；体质监测：身高/体重/肺活量/坐位体前屈自动测量',
+    price:'1-5万元/套',
+    platform:'校园智慧体育云平台（运动分析、体质测试、体育中考、个性化训练方案）',
+    have:'<span class="cell-tag tag-need">未集采</span> AI智慧体育终端',
+    need:'<span class="cell-tag tag-need">补齐</span> AI运动视觉终端+体质监测一体机<br/>Top3：海康威视、视辰科技（商汤）、加视科技'
+  },
+  {
+    id:19,
+    edu:'普教',
+    category:'智慧体育',
+    subcategory:'体质健康监测',
+    desc:'通过智能体质监测一体机、可穿戴设备，对学生身高、体重、肺活量、坐位体前屈、仰卧起坐等体质指标进行自动化采集与数据分析，生成个性化体质报告与运动处方。',
+    cases:'北京市学生体质健康监测平台（覆盖全市中小学）',
+    terminals:'体质监测一体机、智能跳绳、运动手环、体测云平台',
+    termDesc:'一体机：全自动测量8项体质指标，数据直接上传；智能跳绳：蓝牙计数+APP记录；手环：心率/运动量实时监测',
+    price:'1-5万元/套',
+    platform:'学生体质健康管理平台（体测数据、趋势分析、运动处方、健康档案）',
+    have:'<span class="cell-tag tag-need">未集采</span> 体质监测终端',
+    need:'<span class="cell-tag tag-need">补齐</span> 体质监测一体机+运动手环<br/>Top3：海康威视、视辰科技、加视科技'
+  },
+  {
+    id:20,
+    edu:'通用',
+    category:'智慧体育',
+    subcategory:'体育场馆智慧化',
+    desc:'面向学校体育馆、运动场等场景，通过智能灯光控制、场馆预约系统、运动数据采集等终端，实现场馆资源数字化管理、运动数据自动记录与可视化展示。',
+    cases:'清华大学体育场馆智能化改造、上海多所高校智慧体育馆',
+    terminals:'智能场馆控制器、运动数据采集终端、场馆预约终端、LED计分屏',
+    termDesc:'场馆控制器：灯光/空调/门禁联动；数据采集：运动轨迹/速度/心率采集；预约终端：扫码开门+使用记录',
+    price:'2-10万元/场馆',
+    platform:'体育场馆管理平台（预约管理、设备控制、数据分析、计费管理）',
+    have:'<span class="cell-tag tag-need">未集采</span> 场馆智慧化终端',
+    need:'<span class="cell-tag tag-need">补齐</span> 场馆控制器+运动采集终端<br/>Top3：海康威视、itc保伦、领信科技'
+  },
+  {
+    id:21,
+    edu:'职教',
+    category:'智慧实训',
+    subcategory:'智慧实训综合平台',
+    desc:'智慧实训系统基于实训教室的多媒体建设，面向多场景多业务的数字化平台，提升校园实训业务的数字化水平。近景相机拍摄老师示范教学，通过全景相机投放到学生工位，解决围观式教学。',
+    cases:'宁波城市职业技术学院（烹饪实训）、聊城高级财经职业学校；会昌中等专业学校携手超星集团共建AI赋能教育教学创新实践中心（2026.9）',
+    terminals:'移动式实训教学系统、近景摄像机、全景摄像机、大屏显示器',
+    termDesc:'移动推车+近景相机360°悬停拍摄+无线大屏投放；支持多图像同时对比播放；课程一键录制、理实一体化教学',
+    price:'2-5万元/间',
+    platform:'智慧实训教学平台（可视化教学、实训录播、校本资源库）',
+    have:'<span class="cell-tag tag-need">未集采</span> 实训教学终端',
+    need:'<span class="cell-tag tag-need">补齐</span> 移动式实训教学系统<br/>Top3：海康威视、希沃、itc保伦'
+  },
+  {
+    id:22,
+    edu:'职教',
+    category:'智慧实训',
+    subcategory:'医护实训',
+    desc:'智慧医护实训解决方案，面向医护专业设计的实训教学解决方案。覆盖全校园各类医护相关的专业实训室，近景摄像机清晰拍摄老师操作细节，投放给各个床位供学生学习。',
+    cases:'宁夏某医科大学、国内某药科大学',
+    terminals:'近景摄像机、无影灯摄像机、床端显示屏、PAD控制终端',
+    termDesc:'吊顶近景摄像机+无影灯安装，360°悬停拍摄；学生床位显示屏同步观看；PAD集中控制所有摄像画面',
+    price:'3-8万元/间',
+    platform:'智慧实训教学平台（医疗实训录像、操作回放、课程资源）',
+    have:'<span class="cell-tag tag-need">未集采</span> 医护实训终端',
+    need:'<span class="cell-tag tag-need">补齐</span> 医护实训摄像套装<br/>Top3：海康威视、迈瑞医疗、联影医疗'
+  },
+  {
+    id:23,
+    edu:'职教',
+    category:'智慧实训',
+    subcategory:'汽车制造实训',
+    desc:'汽车制造智慧实训解决方案，为实训室建设音视频系统，解决围观式教学、实训示教录像回放等问题。移动式视频管理系统结合大屏，覆盖整车/发动机/变速箱等实训场景。',
+    cases:'乐山第一职业高级中学、哈尔滨科学技术职业学院',
+    terminals:'移动式视频管理系统、近景摄像机、大屏显示器',
+    termDesc:'移动推车覆盖所有实训场景；近景拍摄操作细节+大屏投放；支持回放和课程素材积累',
+    price:'2-5万元/间',
+    platform:'智慧实训教学平台（汽修实训录像、课程管理）',
+    have:'<span class="cell-tag tag-need">未集采</span> 汽修实训终端',
+    need:'<span class="cell-tag tag-need">补齐</span> 移动式实训视频系统<br/>Top3：海康威视、希沃、景格科技'
+  },
+  {
+    id:24,
+    edu:'职教',
+    category:'智慧实训',
+    subcategory:'机械制造实训',
+    desc:'面向机械制造专业实训教学场景，为车间建设音视频示教系统，通过近景摄像机拍摄数控机床/加工中心操作细节，大屏投放供学生观摩，解决围观式教学痛点。支持实训录像回放与课程资源积累。',
+    cases:'国内多所职业技术学院机械加工实训中心',
+    terminals:'移动式实训教学系统、近景摄像机、大屏显示器、实训录播主机',
+    termDesc:'移动推车覆盖数控车床/铣床/加工中心等实训场景；近景拍摄操作细节+大屏投放；支持回放和课程素材积累',
+    price:'2-5万元/间',
+    platform:'智慧实训教学平台（机械实训录像、课程管理、资源库）',
+    have:'<span class="cell-tag tag-need">未集采</span> 机械实训终端',
+    need:'<span class="cell-tag tag-need">补齐</span> 移动式实训视频系统<br/>Top3：海康威视、希沃、景格科技'
+  },
+  {
+    id:25,
+    edu:'职教',
+    category:'智慧实训',
+    subcategory:'电子信息实训',
+    desc:'面向电子信息/物联网/通信等专业实训教学场景，为实训室建设音视频示教系统与虚拟仿真平台，近景拍摄电路焊接/调试操作细节，大屏投放供学生观摩。支持虚拟仿真实验与远程实训。',
+    cases:'国内多所职业技术学院电子信息技术实训中心；云南机电职业技术学院（案例入选《2026智能教育发展蓝皮书》·自适应学习与测评助力绿电专业人才培养）',
+    terminals:'移动式实训教学系统、近景摄像机、虚拟仿真终端、大屏显示器',
+    termDesc:'移动推车覆盖电路焊接/调试/测试等场景；近景拍摄+大屏投放；虚拟仿真：电路/单片机/物联网仿真实验',
+    price:'2-6万元/间',
+    platform:'智慧实训教学平台（电子实训录像、虚拟仿真、课程管理）',
+    have:'<span class="cell-tag tag-need">未集采</span> 电子实训终端',
+    need:'<span class="cell-tag tag-need">补齐</span> 移动式实训系统+虚拟仿真终端<br/>Top3：海康威视、希沃、北京百科荣创'
+  },
+  {
+    id:26,
+    edu:'职教',
+    category:'智慧实训',
+    subcategory:'餐饮实训',
+    desc:'面向烹饪/餐饮服务专业实训教学场景，为实训厨房/餐厅建设音视频示教系统，近景摄像机拍摄刀工/烹饪操作细节，投放至各工位显示屏。支持实训录像回放、菜品展示与课程资源积累。',
+    cases:'宁波城市职业技术学院（烹饪实训）、聊城高级财经职业学校；会昌中等专业学校携手超星集团共建AI赋能教育教学创新实践中心（2026.9）',
+    terminals:'移动式实训教学系统、近景摄像机、工位显示屏、实训录播主机',
+    termDesc:'移动推车覆盖中餐/西餐/面点/烘焙等实训场景；近景拍摄烹饪操作细节+工位屏同步观看；支持回放和课程素材积累',
+    price:'2-5万元/间',
+    platform:'智慧实训教学平台（餐饮实训录像、课程管理、资源库）',
+    have:'<span class="cell-tag tag-need">未集采</span> 餐饮实训终端',
+    need:'<span class="cell-tag tag-need">补齐</span> 移动式实训视频系统<br/>Top3：海康威视、希沃、itc保伦'
+  },
+  {
+    id:27,
+    edu:'高教',
+    category:'智慧后勤',
+    subcategory:'智慧宿舍',
+    desc:'基于智能物联感知技术和数据融汇共享的综合性宿舍管理系统，建立集住宿管理、通行管理、归寝考勤、寝务管理、安全监管、移动端应用等智能化场景应用。',
+    cases:'东南大学、华中师范大学',
+    terminals:'人脸识别闸机、宿舍管理终端、智能门禁、归寝考勤终端',
+    termDesc:'人脸闸机：多认证手段数据采集；归寝终端：每日归寝实时统计，异常数据及时推送；门禁：出入人员精准鉴权',
+    price:'5,000-15,000元/台',
+    platform:'宿舍智慧管理系统（住宿管理、通行管理、归寝考勤、安全监管）',
+    have:'<span class="cell-tag tag-need">未集采</span> 宿舍人脸闸机/归寝终端',
+    need:'<span class="cell-tag tag-need">补齐</span> 人脸识别闸机+归寝考勤终端<br/>Top3：海康威视、大华股份、熵基科技'
+  },
+  {
+    id:28,
+    edu:'通用',
+    category:'智慧后勤',
+    subcategory:'智慧食安/明厨亮灶',
+    desc:'面向教育局统一建设校园食品安全监管平台，对食材采购、验收、贮存、加工、售卖、核算等环节全链条实时监管精准预警，实现从物联感知到多方共治的监管闭环。',
+    cases:'成都七中智慧食堂管理系统项目；萧县中学AI明厨亮灶智慧监管（2026.9，全县学校食堂全覆盖）；郑州美术学院明厨亮灶新校区建设（2026.9）',
+    terminals:'智能封签机、云打印标签机、AI摄像头、明厨亮灶终端',
+    termDesc:'封签机：WIFI+云打印，对接天翼明厨亮灶系统；AI摄像头：后厨行为识别（未戴帽/手套/违规操作）；截至2026.2全国中小学食堂明厨亮灶覆盖率达98.5%',
+    price:'500-3,000元/台',
+    platform:'校园食品安全监管平台（食材溯源、过程监管、风险预警、数据分析）',
+    have:'<span class="cell-tag tag-have">已有</span> 创智盈C22封签机',
+    need:'<span class="cell-tag tag-need">补齐</span> 后厨AI摄像头（明厨亮灶专用）<br/>Top3：海康威视、大华股份、宇视科技'
+  },
+  {
+    id:29,
+    edu:'普教',
+    category:'智慧后勤',
+    subcategory:'放学管理',
+    desc:'中小学幼儿园放学管理系统连接校门口的信息发布屏、身份识别设备、教室内的班班通/电子班牌设备，通过云平台拉通教室、校门口、家长端，实现放学全流程闭环管理。',
+    cases:'宿迁实验小学（东门/南门双校口部署）',
+    terminals:'放学信息发布屏、身份识别终端、电子班牌、家长端APP',
+    termDesc:'信息发布屏：校门口大屏展示班级放学状态；身份识别：刷卡/人脸识别触发放学通知；家长APP实时接收接送信息',
+    price:'2,000-5,000元/台',
+    platform:'云眸平台（放学管理模块，信息互通多场景多角色）',
+    have:'<span class="cell-tag tag-have">部分已有</span> 电子班牌可复用',
+    need:'<span class="cell-tag tag-need">补齐</span> 校门口信息发布大屏+身份识别终端<br/>Top3：海康威视、大华股份、希沃'
+  },
+  {
+    id:30,
+    edu:'通用',
+    category:'智慧后勤',
+    subcategory:'能耗管理',
+    desc:'面向校园水/电/气/热等能耗场景，通过智能电表、水表、燃气表及能耗采集网关，实现能耗数据实时采集、分项计量、异常预警与节能分析，助力绿色校园建设。',
+    cases:'清华大学能耗监管平台、浙江大学绿色校园项目',
+    terminals:'智能电表、智能水表、能耗采集网关、能耗管理终端',
+    termDesc:'智能电表：RS485/NB-IoT通信，分时段计价；水表：远传抄表+漏水检测；网关：多协议汇聚上传平台',
+    price:'1,000-5,000元/点位',
+    platform:'校园能耗管理平台（分项计量、能耗分析、异常预警、节能优化）',
+    have:'<span class="cell-tag tag-need">未集采</span> 能耗采集终端',
+    need:'<span class="cell-tag tag-need">补齐</span> 智能电表/水表+能耗网关<br/>Top3：海康威视、新大陆、安科瑞'
+  },
+  {
+    id:31,
+    edu:'通用',
+    category:'智慧后勤',
+    subcategory:'智慧停车',
+    desc:'面向校园教职工与学生停车场景，通过车牌识别摄像头、车位引导屏、充电桩等终端，实现车辆无感进出、车位引导、充电管理、停车数据可视化分析。',
+    cases:'多所高校校园智慧停车改造项目',
+    terminals:'车牌识别摄像头、车位引导屏、充电桩、停车管理终端',
+    termDesc:'车牌识别：毫秒级识别+无感通行；车位引导：超声波/视频车位检测+LED引导；充电桩：支持快充/慢充',
+    price:'5,000-30,000元/点位',
+    platform:'校园停车管理平台（车辆管理、车位引导、充电管理、数据分析）',
+    have:'<span class="cell-tag tag-need">未集采</span> 智慧停车终端',
+    need:'<span class="cell-tag tag-need">补齐</span> 车牌识别+车位引导+充电桩<br/>Top3：海康威视、捷顺科技、道通科技'
+  },
+  {
+    id:32,
+    edu:'通用',
+    category:'智慧校园',
+    subcategory:'综合管理平台',
+    desc:'以物联网为基础的智慧化校园工作、学习和生活一体化环境。基于多维物联感知终端和IT数字化基础设施，构建智能物联能力底座，提供物联、数据、AI能力的整合和开放共享。',
+    cases:'宁波大学（一体化物联网大平台）、武汉大学（大模型安全管控）',
+    terminals:'物联网关、传感器集群、AI边缘服务器、综合管理终端',
+    termDesc:'物联网关：连接照明/环境/安防/门禁等多类设备；AI边缘服务器：本地化视频AI分析；统一平台管理全域设备',
+    price:'5-50万元/校',
+    platform:'智慧校园综合管理平台（物联底座、数据中台、AI中台、场景应用）',
+    have:'<span class="cell-tag tag-need">未集采</span> 物联网关/AI边缘服务器',
+    need:'<span class="cell-tag tag-need">补齐</span> 物联网关+AI边缘服务器<br/>Top3：海康威视、华为、新华三'
+  },
+  {
+    id:33,
+    edu:'通用',
+    category:'智慧校园',
+    subcategory:'一卡通/考勤',
+    desc:'校园一卡通系统整合门禁、考勤、消费、图书借阅、支付等功能，基于NFC/RFID技术，学生证作为唯一身份载体，实现校园全场景一卡通行。',
+    cases:'全国多所学校配套智能学生证使用',
+    terminals:'智能学生证、NFC读卡器、RFID考勤终端、消费终端',
+    termDesc:'学生证集成2.4G RFID+13.56M NFC，支持无感考勤、门禁、食堂消费、图书借阅、支付宝等功能',
+    price:'200-500元/台',
+    platform:'校园一卡通管理平台（统一身份认证、消费管理、考勤管理）',
+    have:'<span class="cell-tag tag-have">已有</span> 22款智能学生证（卡尔/瑞翼/博实结/掇月/小书郎等）',
+    need:'<span class="cell-tag tag-need">补齐</span> NFC消费终端/RFID考勤门<br/>Top3：海康威视、新中新、中控智慧'
+  },
+  {
+    id:34,
+    edu:'通用',
+    category:'智慧校园',
+    subcategory:'智慧用印',
+    desc:'量子云印章系统面向企事业单位，通过智能印章机实现用印申请、审批、监控、盖章全流程数字化管理，支持红外范围内用印、多角度调节、A3/A4画幅使用，加密云印章补充使用。',
+    cases:'企事业单位通用场景',
+    terminals:'量子云印章终端、安全Ukey',
+    termDesc:'10.1寸触摸屏，RK3568芯片，Android11，1300万+200万双摄；支持多印章管理、远程授权、用印记录追溯',
+    price:'3,000-8,000元/台',
+    platform:'量子云印章管理平台（用印申请/审批/监控/记录）',
+    have:'<span class="cell-tag tag-have">已有</span> 天翼量子云印章(4款)、玺得安TY600、天翼安全Ukey',
+    need:'<span class="cell-tag tag-have">已覆盖</span> 校园场景可推广校长办公室/教务用印场景'
+  },
+  {
+    id:35,
+    edu:'通用',
+    category:'智慧校园',
+    subcategory:'云会议/远程协作',
+    desc:'面向学校行政办公与跨校区协作场景，通过云会议终端、会议平板、USB会议摄像头等设备，实现高清视频会议、屏幕共享、会议录制、远程协作，提升办公效率。',
+    cases:'多所高校云会议室建设项目',
+    terminals:'云会议终端、会议平板、USB会议摄像头、全向麦克风',
+    termDesc:'云会议终端：支持1080P/4K视频会议，兼容腾讯/钉钉/飞书；会议平板：触控书写+视频会议一体；全向麦：360°拾音+回声消除',
+    price:'3,000-50,000元/套',
+    platform:'天翼云会议平台（会议管理、录制存档、远程协作）',
+    have:'<span class="cell-tag tag-have">已有</span> 华为IdeaHub、MAXHUB会议平板',
+    need:'<span class="cell-tag tag-have">已覆盖</span> 可增加USB会议摄像头/全向麦品类'
+  },
+  {
+    id:36,
+    edu:'高教',
+    category:'智慧校园',
+    subcategory:'数字孪生/3D校园',
+    desc:'基于BIM+GIS+IoT技术，构建校园三维数字孪生模型，实现校园资产可视化、能耗可监测、安防可联动、设备可管控的一体化管理，为校园运营决策提供数据支撑。',
+    cases:'同济大学数字孪生校园、华中科技大学3D校园平台',
+    terminals:'数字孪生平台服务器、3D可视化终端、BIM建模软件、IoT数据网关',
+    termDesc:'数字孪生：BIM模型+实时IoT数据驱动，校园全景3D可视化；支持设备/能耗/安防多维数据融合展示',
+    price:'20-100万元/校',
+    platform:'校园数字孪生管理平台（3D可视化、资产管理、能耗监测、安防联动）',
+    have:'<span class="cell-tag tag-need">未集采</span> 数字孪生平台',
+    need:'<span class="cell-tag tag-need">补齐</span> 3D可视化终端+孪生平台<br/>Top3：超图软件、51World、海康威视'
+  },
+  {
+    id:37,
+    edu:'通用',
+    category:'智慧环境',
+    subcategory:'智慧照明',
+    desc:'以绿色护眼助改善，智能控制助管理为建设目标，链接教室照明、多媒体设备等多种物联设备进行智能联动。软硬件一体化设计，实现校园健康护眼、节能减排、智能物联的目标。',
+    cases:'广西梧州市教育局（300间教室改造）、天津市东丽区教育局（270间教室改造）',
+    terminals:'护眼教室灯、护眼黑板灯、智能网关、环境传感器',
+    termDesc:'护眼灯：无频闪、无蓝光危害，9盏教室灯+3盏黑板灯标准配置；智能网关：连接照明、电源、环境、开关等设备',
+    price:'3,000-6,000元/教室',
+    platform:'校园照明管理平台（一图知校园、一图管校园、设备状态监控、能耗分析）',
+    have:'<span class="cell-tag tag-need">未集采</span> 智慧照明终端',
+    need:'<span class="cell-tag tag-need">补齐</span> 护眼灯+智能网关套装<br/>Top3：欧普照明、雷士照明、立达信'
+  },
+  {
+    id:38,
+    edu:'通用',
+    category:'智慧环境',
+    subcategory:'智慧广播',
+    desc:'通过广播管理平台及前端的寻呼话筒、IP音箱、IP音柱实现校园广播的分区管理、广播预案、事件联动广播、定时广播等应用，满足日常管理及教学服务。',
+    cases:'扶沟县74所学校广播联网改造、湖南益阳市第一中学考场广播',
+    terminals:'IP音箱、IP音柱、寻呼话筒、广播管理终端',
+    termDesc:'IP音箱/音柱：支持网络音频流解码，分区/分组控制；寻呼话筒：一键分区广播、预案触发；支持定时广播和事件联动',
+    price:'500-3,000元/台',
+    platform:'智慧广播管理平台（分区管理、预案管理、定时广播、事件联动、地图可视化）',
+    have:'<span class="cell-tag tag-need">未集采</span> IP广播终端',
+    need:'<span class="cell-tag tag-need">补齐</span> IP音箱/音柱/寻呼话筒<br/>Top3：itc保伦、海康威视、DSPPA（迪士普）'
+  },
+  {
+    id:39,
+    edu:'通用',
+    category:'智慧环境',
+    subcategory:'环境监测',
+    desc:'面向教室、实验室、宿舍等室内场景，通过空气品质传感器、温湿度传感器、PM2.5/CO2监测终端，实时监测室内环境质量，联动新风/净化设备，保障师生健康。',
+    cases:'北京市中小学教室空气质量监测项目',
+    terminals:'空气质量传感器、温湿度监测终端、PM2.5/CO2检测仪、环境显示屏',
+    termDesc:'传感器：PM2.5/CO2/TVOC/温湿度/光照多合一检测；显示屏：教室环境数据实时展示；联动新风系统自动调节',
+    price:'500-3,000元/点位',
+    platform:'校园环境监测平台（实时监测、超标预警、设备联动、数据分析）',
+    have:'<span class="cell-tag tag-need">未集采</span> 环境监测终端',
+    need:'<span class="cell-tag tag-need">补齐</span> 空气品质传感器+环境显示屏<br/>Top3：海康威视、汉威科技、远大科技'
+  },
+  {
+    id:40,
+    edu:'通用',
+    category:'智慧环境',
+    subcategory:'智能楼宇/IBMS',
+    desc:'面向校园教学楼、办公楼、体育馆等建筑场景，通过楼宇自控系统集成空调、照明、电梯、给排水等子系统，实现设备统一管控、能耗优化、故障预警、运维自动化。',
+    cases:'清华大学楼宇自控改造、上海交大智能建筑集成项目',
+    terminals:'楼宇自控控制器、DDC直接数字控制器、智能网关、IBMS管理终端',
+    termDesc:'DDC：暖通/照明/电梯本地控制+远程管理；IBMS：多子系统统一集成界面；支持联动策略配置与故障自动告警',
+    price:'5-30万元/楼',
+    platform:'智能楼宇管理平台（设备管控、能耗优化、运维管理、故障预警）',
+    have:'<span class="cell-tag tag-need">未集采</span> 楼宇自控终端',
+    need:'<span class="cell-tag tag-need">补齐</span> DDC控制器+IBMS平台<br/>Top3：海康威视、江森自控、霍尼韦尔'
+  },
+  {
+    id:41,
+    edu:'通用',
+    category:'智慧学习',
+    subcategory:'AI学习终端',
+    desc:'AI学习终端集成智能语音交互、百科问答、诗词鉴赏、单词速学、课内知识同步等功能，覆盖K12全学段。跨端作业布置，可视化家长学情报告，AI技术赋能师生课堂与自主学习。',
+    cases:'瑞翼E16智学版（对接翼智教育平台）、好学子H9学习版；小猿AI学习机T6/T6 Pro（2026服贸会首发超拟人AI老师，融合分学科教学+个性化辅导+全场景伴学）',
+    terminals:'AI学习学生证（墨水屏版）、智能书包、教育平板',
+    termDesc:'墨水屏学生证：类纸观感护眼无蓝光，3.7寸280x480；内置诗词/算数/英语陪练+讯飞AI语音问答；支持跨平台作业布置',
+    price:'369-499元/台',
+    platform:'翼智教育平台（AI百科问答、天气查询、心灵树洞、学情报告、作业管理）',
+    have:'<span class="cell-tag tag-have">已有</span> 瑞翼E16智学版(369元)、SweiKuo B-S300墨水屏版、好学子H9学习版、新翔智能书包(499元)',
+    need:'<span class="cell-tag tag-have">已覆盖</span> 可进一步丰富AI内容和教育平板品类（希沃/纽曼/AOC已有集采）'
+  },
+  {
+    id:42,
+    edu:'高教',
+    category:'智慧学习',
+    subcategory:'智慧图书馆',
+    desc:'面向学校图书馆场景，通过RFID图书管理、自助借还终端、智能书架、盘点机器人等设备，实现图书自助借还、智能盘点、座位预约、阅读数据分析，提升图书馆服务效率。',
+    cases:'北京大学图书馆智慧化改造、武汉大学智慧图书馆',
+    terminals:'RFID图书标签、自助借还终端、智能书架、盘点机器人、座位预约终端',
+    termDesc:'RFID：无感借还+防盗检测；自助终端：扫码/刷脸借还；盘点机器人：自动巡架盘点+错架定位；座位预约：扫码签到',
+    price:'3,000-15,000元/台',
+    platform:'智慧图书馆管理平台（借还管理、盘点管理、座位管理、阅读分析）',
+    have:'<span class="cell-tag tag-need">未集采</span> 图书馆智慧终端',
+    need:'<span class="cell-tag tag-need">补齐</span> 自助借还终端+盘点机器人<br/>Top3：海康威视、远望谷、阿法迪'
+  },
+  {
+    id:43,
+    edu:'通用',
+    category:'智慧学习',
+    subcategory:'数字阅读终端',
+    desc:'面向中小学阅读教育场景，通过墨水屏阅读器、数字阅览室终端，为学生提供护眼数字阅读体验，内置海量电子书/绘本/期刊，支持阅读数据分析与个性化推荐。',
+    cases:'多地中小学"数字阅览室"试点项目',
+    terminals:'墨水屏阅读器、数字阅览室终端、阅读管理平台',
+    termDesc:'墨水屏：类纸护眼无蓝光，6-10寸；阅览室终端：触控+护眼模式，预装电子书库；支持阅读时长/偏好分析',
+    price:'500-3,000元/台',
+    platform:'数字阅读管理平台（电子书管理、阅读分析、个性化推荐）',
+    have:'<span class="cell-tag tag-need">未集采</span> 数字阅读终端',
+    need:'<span class="cell-tag tag-need">补齐</span> 墨水屏阅读器+阅览室终端<br/>Top3：掌阅、文石、海信'
+  },
+  {
+    id:44,
+    edu:'幼教',
+    category:'幼教特教',
+    subcategory:'幼教晨检/接送',
+    desc:'面向幼儿园晨检、接送、防走失等安全管理场景，通过人脸识别闸机、晨检机器人、儿童定位卡等终端，构建"入园-晨检-接送-离园"全流程安全闭环，缓解家长接送焦虑。',
+    cases:'杭州春晖小学（全域智治样板校·AI地空协同巡查）',
+    terminals:'晨检机器人、人脸识别闸机、儿童智能定位卡、接送信息屏',
+    termDesc:'晨检机器人：体温/手口/身高体重自动检测，秒级出报告；定位卡：4G+GPS+电子围栏，异常告警推送家长',
+    price:'1,000-8,000元/台',
+    platform:'幼儿园安全管理平台（晨检记录、接送核验、告警推送、数据看板）',
+    have:'<span class="cell-tag tag-have">部分已有</span> 智能学生证可复用（定位/4G）',
+    need:'<span class="cell-tag tag-need">补齐</span> 晨检机器人+儿童接送机<br/>Top3：海康威视、大华股份、科大讯飞'
+  },
+  {
+    id:45,
+    edu:'幼教',
+    category:'幼教特教',
+    subcategory:'幼教智慧课堂',
+    desc:'面向幼儿园互动教学与健康监测场景，通过幼儿交互一体机、体感互动设备与AI绘本阅读终端，实现寓教于乐的互动课堂，并支持幼儿行为观察记录。',
+    cases:'全国多地示范幼儿园（智慧课堂试点）',
+    terminals:'幼教交互一体机、AI绘本阅读终端、体感互动终端',
+    termDesc:'交互一体机：触控互动+护眼模式；AI绘本：扫码朗读+互动提问；体感设备：运动/舞蹈跟随教学',
+    price:'5,000-20,000元/台',
+    platform:'幼教云平台（课程资源、成长档案、家园共育）',
+    have:'<span class="cell-tag tag-need">未集采</span> 幼教专属终端',
+    need:'<span class="cell-tag tag-need">补齐</span> 幼教交互一体机套装<br/>Top3：希沃、海康威视、鸿合科技'
+  },
+  {
+    id:46,
+    edu:'特教',
+    category:'幼教特教',
+    subcategory:'特教智慧辅具',
+    desc:'面向特殊教育学校，提供AI手语翻译、无障碍沟通屏、听觉辅助等终端，结合AI语音识别与肢体识别技术，帮助听障/视障/言语障碍学生平等参与课堂，提升特教教学质量。',
+    cases:'全国特殊教育学校试点（AI手语课堂）',
+    terminals:'AI手语翻译屏、听觉辅助终端、无障碍沟通平板',
+    termDesc:'手语翻译：摄像头捕捉手语实时转文字/语音；听觉辅助：骨传导+降噪；无障碍平板：语音输入/读屏',
+    price:'3,000-15,000元/台',
+    platform:'特教教学资源平台（手语语料库、无障碍交互、学情跟踪）',
+    have:'<span class="cell-tag tag-need">未集采</span> 特教辅具终端',
+    need:'<span class="cell-tag tag-need">补齐</span> AI手语翻译/无障碍终端<br/>Top3：科大讯飞、海康威视、腾讯天籁'
+  },
+  {
+    id:47,
+    edu:'特教',
+    category:'幼教特教',
+    subcategory:'特教智慧康复',
+    desc:'面向特殊教育学校康复训练场景，通过AI体感康复终端、言语康复训练仪等设备，为肢体、言语、认知障碍学生提供趣味化、数据化的康复训练方案，记录进步曲线。',
+    cases:'全国特殊教育学校康复教室建设',
+    terminals:'AI体感康复终端、言语训练仪、认知评估终端',
+    termDesc:'体感康复：Kinect类动作捕捉+游戏化训练；言语训练：发音反馈+纠音引导；认知评估：量表数字化',
+    price:'5,000-30,000元/套',
+    platform:'康复训练管理平台（训练计划、进步曲线、家校共享）',
+    have:'<span class="cell-tag tag-need">未集采</span> 康复训练终端',
+    need:'<span class="cell-tag tag-need">补齐</span> 体感康复+言语训练套装<br/>Top3：科大讯飞、脑陆科技、奥漫优悦'
+  }
+];
+
+// ===== 案例真实出处映射（来源于公开报道/政府网站，供点开核实） =====
+const caseLinks = {
+  1: [
+    {name:'AI防欺凌"校园卫士"上线·嘉兴', url:'https://www.cnjxol.com/jr/202606/t20260626_7515218.shtml'},
+    {name:'AI语音"隐形卫士"让伤害无处遁·搜狐', url:'http://mt.sohu.com/a/978098864_121257119'}
+  ],
+  2: [
+    {name:'杭州市春晖小学·AI预警未来学校（新华网）', url:'http://www.zj.xinhuanet.com/20260511/ab7a8a82b35748d6b688cd9a8ecee1f0/c.html'},
+    {name:'杭州市春晖小学·全域智治（光明网）', url:'https://jyj.gmw.cn/2026-05/12/content_38759334.htm'},
+    {name:'武汉市第十一中学2026年平安校园设备采购公告', url:'http://www.ccgp.gov.cn/cggg/dfgg/zbgg/202604/t20260427_26465954.htm'}
+  ],
+  5: [
+    {name:'智慧宿管·宿舍归寝无感抓拍方案', url:'https://zhuanlan.zhihu.com/p/2019188715000448554'}
+  ],
+  9: [
+    {name:'杭十一中"AI应用促成高效课堂"学术周', url:'https://mp.weixin.qq.com/s?__biz=MzA5NzEyODA2Ng==&mid=2649773496&idx=1&sn=b01e62a71d78eedefb58bbecacd6f4a5'}
+  ],
+  11: [
+    {name:'东南大学41间智慧教室焕新（腾讯新闻）', url:'https://new.qq.com/rain/a/20251010A05WUB00'}
+  ],
+  15: [
+    {name:'宁波市2026年科学实验操作测试（市教育局）', url:'https://jyj.ningbo.gov.cn/col/col1229167027/art/2026/art_4d073810276520f7d454d43b7c26f927.html'}
+  ],
+  18: [
+    {name:'AI赋能体育公开课·培正中学（中国奥委会）', url:'https://www.olympic.cn/news/focus/2025/1120/672519.html'},
+    {name:'AI体育课：当算法走进操场', url:'https://wxb.xzdw.gov.cn/wlcb/cbgz/202604/t20260416_664129.html'},
+    {name:'奈曼旗第一中学AI智慧体育建设项目中标公告（政府采购网）', url:'http://www.ccgp.gov.cn/cggg/dfgg/zbgg/202609/t20260907_27281877.htm'}
+  ],
+  21: [
+    {name:'教育部第二批"十四五"职业教育规划教材（海康智慧实训参考）', url:'http://www.moe.gov.cn/jyb_xxgk/s5743/s5744/202601/W020260126595155508754.pdf'},
+    {name:'会昌中专AI赋能教育教学创新实践中心揭牌（会昌县政府）', url:'https://www.huichang.gov.cn/hcxxxgk/hc1420/202609/0cebb8b6970b41e98d8950f6454aa391.shtml'}
+  ],
+  23: [
+    {name:'杭州十一中智慧课堂（市桥西区政府·AI课例）', url:'http://www.sjzqx.gov.cn/columns/c852d214-b459-4335-b5de-896a89e0c8b1/202511/26/bbc7ff26-ff6c-4656-a35c-02cb099b26c4.html'}
+  ],
+  27: [
+    {name:'东南大学"一站式"学生社区建设案例', url:'https://mp.weixin.qq.com/s?__biz=MzU0ODQ5MTg0OQ==&mid=2247662549&idx=1&sn=23e6dd006195a4ead67d45b090a8b8db'}
+  ],
+  28: [
+    {name:'成都七中万达学校"明厨亮灶"工程', url:'https://mp.weixin.qq.com/s?__biz=MzA3NjQ2NDcwNA==&mid=2653118378&idx=1&sn=78d4b7c97ffcf0f920d1c49e71446d26'},
+    {name:'萧县AI"站岗"后厨守护师生安全（央广网）', url:'https://baijiahao.baidu.com/s?id=1876026854422530203&wfr=spider&for=pc'},
+    {name:'守护"开学第一餐"·郑州美术学院明厨亮灶（百家号）', url:'https://baijiahao.baidu.com/s?id=1875840342016686325&wfr=spider&for=pc'}
+  ],
+  32: [
+    {name:'济南大学"云网数端"智慧校园建设', url:'https://shandong.eol.cn/sdgd/202304/t20230426_2384811.shtml'}
+  ],
+  8: [
+    {name:'湖南工业大学德比学院智慧教室建设项目中标公告', url:'https://cgzx.hut.edu.cn/info/1146/17229.htm'}
+  ],
+  9: [
+    {name:'绵阳三江实验学校获评2026全国智慧教育优秀案例（网易）', url:'https://www.163.com/dy/article/L6D9B2E60552OKRY.html'},
+    {name:'2026服贸会智慧教育前沿成果（首都之窗）', url:'https://www.beijing.gov.cn/fuwu/bmfw/sy/jrts/202609/t20260912_4860920.html'}
+  ],
+  25: [
+    {name:'云南机电职业技术学院入选《2026智能教育发展蓝皮书》（百家号）', url:'https://baijiahao.baidu.com/s?id=1875727914017249114&wfr=spider&for=pc'}
+  ],
+  41: [
+    {name:'小猿学习机亮相2026服贸会·超拟人AI老师（百家号）', url:'https://baijiahao.baidu.com/s?id=1875927668492451924&wfr=spider&for=pc'}
+  ],
+  44: [
+    {name:'杭州市春晖小学·AI地空协同巡查（新华网）', url:'http://www.zj.xinhuanet.com/20260511/ab7a8a82b35748d6b688cd9a8ecee1f0/c.html'}
+  ]
+}
+
+// ===== 渲染表格 =====
+let currentFilter = 'all';
+let sortColumn = 0;
+let sortAsc = true;
+
+function renderTable(data){
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+  data.forEach((row, idx) => {
+    const tr = document.createElement('tr');
+    const cleanTxt = (s) => (s||'').replace(/<[^>]+>/g,' ').replace(/"/g,'&quot;');
+    tr.innerHTML = `
+      <td>${row.id}</td>
+      <td><span class="cell-tag ${row.edu==='普教'?'tag-edu':row.edu==='高教'?'tag-have':row.edu==='幼教'?'tag-red':row.edu==='特教'?'tag-gold':'tag-need'}">${row.edu}</span></td>
+      <td class="cell-scene">${row.category}</td>
+      <td class="cell-subscene td-tip" data-tip="${cleanTxt(row.subcategory)}">${row.subcategory}</td>
+      <td class="cell-edit td-tip" contenteditable="true" data-tip="${cleanTxt(row.desc)}"><div class="cell-clip-inner">${row.desc}</div></td>
+      <td class="cell-link td-tip" data-tip="${cleanTxt(row.cases)}">${row.cases}${(caseLinks[row.id]||[]).map(l => `<div class="case-link"><a href="${l.url}" target="_blank" rel="noopener">🔗 ${l.name}</a></div>`).join('')}</td>
+      <td class="td-tip" data-tip="${cleanTxt(row.terminals)}">${row.terminals}</td>
+      <td class="cell-edit td-tip" contenteditable="true" data-tip="${cleanTxt(row.termDesc)}"><div class="cell-clip-inner">${row.termDesc}</div></td>
+      <td class="cell-price">${row.price}</td>
+      <td class="cell-edit td-tip" contenteditable="true" data-tip="${cleanTxt(row.platform)}"><div class="cell-clip-inner">${row.platform}</div></td>
+      <td class="td-tip" data-tip="${cleanTxt(row.have)}">${row.have}</td>
+      <td class="td-tip" data-tip="${cleanTxt(row.need)}">${row.need}</td>
+      <td><button class="toolbar-btn del-btn" onclick="deleteRow(${idx})">🗑️ 删除</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  if(data.length === 0){
+    tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:40px;color:var(--text-secondary);">暂无数据</td></tr>';
+  }
+}
+
+// ===== 搜索过滤 =====
+function filterTable(){
+  const keyword = document.getElementById('searchInput').value.toLowerCase();
+  let filtered = sceneData.filter(row => {
+    if(currentFilter !== 'all' && row.edu !== currentFilter) return false;
+    const text = (row.category + row.subcategory + row.desc + row.cases + row.terminals + row.termDesc + row.price + row.platform + row.have + row.need).toLowerCase();
+    return text.includes(keyword);
+  });
+  renderTable(filtered);
+}
+
+// ===== 分类过滤 =====
+function filterByCategory(cat, btn){
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter = cat;
+  filterTable();
+}
+
+// ===== 排序 =====
+function sortTable(col){
+  if(sortColumn === col) sortAsc = !sortAsc;
+  else sortColumn = col;
+  const colMap = {0:'id', 1:'edu', 2:'category', 3:'subcategory', 8:'price'};
+  const key = colMap[col];
+  if(!key) return;
+  sceneData.sort((a, b) => {
+    let va = (a[key]||'').toString(), vb = (b[key]||'').toString();
+    if(key === 'price'){
+      va = parseFloat(va.replace(/[^0-9.]/g,'')) || 0;
+      vb = parseFloat(vb.replace(/[^0-9.]/g,'')) || 0;
+    }
+    if(sortAsc) return va > vb ? 1 : -1;
+    return va < vb ? 1 : -1;
+  });
+  filterTable();
+}
+
+// ===== 新增行 =====
+function addRow(){
+  const newRow = {
+    id: sceneData.length + 1,
+    edu: '通用',
+    category: '新大类',
+    subcategory: '新细分场景',
+    desc: '请输入场景描述...',
+    cases: '请输入案例...',
+    terminals: '请输入终端产品...',
+    termDesc: '请输入终端介绍...',
+    price: '请输入价格区间...',
+    platform: '请输入配套能力/平台...',
+    have: '请输入已有产品...',
+    need: '请输入需补齐产品...'
+  };
+  sceneData.push(newRow);
+  filterTable();
+  showToast('已新增场景行，请双击单元格编辑');
+}
+
+// ===== 删除行 =====
+function deleteRow(idx){
+  const keyword = document.getElementById('searchInput').value.toLowerCase();
+  let filtered = sceneData.filter(row => {
+    if(currentFilter !== 'all' && row.edu !== currentFilter) return false;
+    const text = (row.category + row.subcategory + row.desc + row.cases + row.terminals + row.termDesc + row.price + row.platform + row.have + row.need).toLowerCase();
+    return text.includes(keyword);
+  });
+  const rowToDelete = filtered[idx];
+  if(rowToDelete){
+    const realIdx = sceneData.indexOf(rowToDelete);
+    sceneData.splice(realIdx, 1);
+    filterTable();
+    showToast('已删除场景');
+  }
+}
+
+// ===== 导出CSV =====
+function exportCSV(){
+  const headers = ['编号','学段','场景大类','细分场景','场景描述','典型案例','终端产品','终端介绍','价格区间','配套能力/平台','已有产品','需补齐产品'];
+  let csv = '\uFEFF' + headers.join(',') + '\n';
+  sceneData.forEach(row => {
+    const values = [row.id, row.edu, row.category, row.subcategory||'', row.desc, row.cases, row.terminals, row.termDesc, row.price, row.platform, row.have.replace(/<[^>]+>/g,''), row.need.replace(/<[^>]+>/g,'')];
+    csv += values.map(v => `"${(v||'').toString().replace(/"/g,'""')}"`).join(',') + '\n';
+  });
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = '产数终端校园场景_行业洞察.csv';
+  link.click();
+  showToast('CSV已导出');
+}
+
+// ===== 导出JSON =====
+function exportJSON(){
+  const blob = new Blob([JSON.stringify(sceneData, null, 2)], {type:'application/json'});
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = '产数终端校园场景_行业洞察.json';
+  link.click();
+  showToast('JSON已导出');
+}
+
+// ===== 导入数据 =====
+function importData(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      if(file.name.endsWith('.json')){
+        const data = JSON.parse(e.target.result);
+        if(Array.isArray(data)){
+          sceneData.length = 0;
+          sceneData.push(...data);
+          renderTable(sceneData);
+          showToast('JSON导入成功，共' + sceneData.length + '条');
+        }
+      } else if(file.name.endsWith('.csv')){
+        const text = e.target.result.replace(/^\uFEFF/,'');
+        const lines = text.split('\n').filter(l => l.trim());
+        const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g,''));
+        sceneData.length = 0;
+        for(let i = 1; i < lines.length; i++){
+          const vals = lines[i].match(/("([^"]|"")*"|[^,]*)/g).map(v => v.replace(/^"|"$/g,'').replace(/""/g,'"'));
+          sceneData.push({
+            id: parseInt(vals[0])||i,
+            edu: vals[1]||'通用',
+            category: vals[2]||'',
+            subcategory: vals[3]||'',
+            desc: vals[4]||'',
+            cases: vals[5]||'',
+            terminals: vals[6]||'',
+            termDesc: vals[7]||'',
+            price: vals[8]||'',
+            platform: vals[9]||'',
+            have: vals[10]||'',
+            need: vals[11]||''
+          });
+        }
+        renderTable(sceneData);
+        showToast('CSV导入成功，共' + sceneData.length + '条');
+      }
+    }catch(err){
+      showToast('导入失败：' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ===== 全局单元格 Tooltip（浮层，避免被表格滚动容器裁剪） =====
+(function(){
+  let tip = document.createElement('div');
+  tip.id = 'globalTip';
+  tip.style.cssText = 'position:fixed;z-index:9999;max-width:420px;max-height:260px;overflow-y:auto;background:linear-gradient(160deg,#141a3d 0%,#0d1230 100%);border:1px solid #e4002b;border-radius:10px;padding:12px 14px;box-shadow:0 16px 48px rgba(0,0,0,0.7);font-size:12.5px;line-height:1.8;color:#c9d4ee;white-space:normal;word-break:break-word;pointer-events:none;opacity:0;visibility:hidden;transition:opacity .18s ease,visibility .18s ease;';
+  document.body.appendChild(tip);
+  let hideTimer = null;
+  function showTip(html, x, y){
+    tip.innerHTML = html;
+    tip.style.visibility = 'visible';
+    tip.style.opacity = '1';
+    // 定位：避免超出视口
+    tip.style.left = '0px'; tip.style.top = '0px';
+    const r = tip.getBoundingClientRect();
+    let left = x + 16, top = y + 16;
+    if(left + r.width > window.innerWidth - 8) left = x - r.width - 12;
+    if(left < 8) left = 8;
+    if(top + r.height > window.innerHeight - 8) top = y - r.height - 12;
+    if(top < 8) top = 8;
+    tip.style.left = left + 'px';
+    tip.style.top = top + 'px';
+  }
+  function hideTip(){
+    tip.style.opacity = '0';
+    tip.style.visibility = 'hidden';
+  }
+  document.addEventListener('mouseover', function(e){
+    const t = e.target.closest('.td-tip[data-tip]');
+    if(t){
+      clearTimeout(hideTimer);
+      showTip(t.getAttribute('data-tip'), e.clientX, e.clientY);
+    }
+  });
+  document.addEventListener('mouseout', function(e){
+    const t = e.target.closest('.td-tip[data-tip]');
+    if(t) hideTimer = setTimeout(hideTip, 60);
+  });
+  document.addEventListener('mousemove', function(e){
+    if(tip.style.visibility === 'visible' && e.target.closest('.td-tip[data-tip]')){
+      // 鼠标移动时轻微跟随，避免遮挡内容
+    }
+  });
+})();
+
+// ===== 页面切换 =====
+function switchPage(page){
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  if(page === 'overview'){
+    document.getElementById('page-overview').classList.add('active');
+    document.querySelectorAll('.nav-tab')[0].classList.add('active');
+  } else {
+    document.getElementById('page-planning').classList.add('active');
+    document.querySelectorAll('.nav-tab')[1].classList.add('active');
+  }
+  window.scrollTo(0, 0);
+}
+
+// ===== 统计数字：点击切换弹出层 =====
+function positionStatPop(stat){
+  const pop = stat.querySelector('.stat-pop');
+  if(!pop) return;
+  const r = stat.getBoundingClientRect();
+  const pw = pop.offsetWidth, ph = pop.offsetHeight;
+  let left = r.left + r.width / 2 - pw / 2;
+  let top = r.bottom + 12;
+  // 视口内修正
+  if(left < 12) left = 12;
+  if(left + pw > window.innerWidth - 12) left = window.innerWidth - pw - 12;
+  if(top + ph > window.innerHeight - 12) top = r.top - ph - 12; // 放不下则显示在上方
+  if(top < 12) top = 12;
+  pop.style.left = left + 'px';
+  pop.style.top = top + 'px';
+}
+function syncStatMask(){
+  const hasHover = !!document.querySelector('.hero-stat:hover');
+  const hasShow = !!document.querySelector('.hero-stat.show');
+  document.body.classList.toggle('has-stat-pop', hasHover || hasShow);
+}
+// 悬停时定位
+document.addEventListener('mouseover', function(e){
+  const stat = e.target.closest('.hero-stat');
+  if(stat){
+    positionStatPop(stat);
+    syncStatMask();
+  }
+});
+document.addEventListener('mouseout', function(e){
+  if(e.target.closest('.hero-stat')) syncStatMask();
+});
+// 点击时定位 + 切换
+document.querySelectorAll('.hero-stat').forEach(stat => {
+  stat.addEventListener('click', function(e){
+    e.stopPropagation();
+    const had = this.classList.contains('show');
+    document.querySelectorAll('.hero-stat.show').forEach(s => { if(s !== this) s.classList.remove('show'); });
+    this.classList.toggle('show');
+    if(!had) positionStatPop(this);
+    syncStatMask();
+  });
+});
+document.addEventListener('click', function(){
+  document.querySelectorAll('.hero-stat.show').forEach(s => s.classList.remove('show'));
+  syncStatMask();
+});
+// 窗口尺寸变化时重新定位当前展开的弹层
+window.addEventListener('resize', function(){
+  const shown = document.querySelector('.hero-stat.show') || document.querySelector('.hero-stat:hover');
+  if(shown) positionStatPop(shown);
+});
+
+// ===== 提示 =====
+function showToast(msg){
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// ===== 初始化 =====
+renderTable(sceneData);
+</script>
+</body>
+</html>
+
+
+
