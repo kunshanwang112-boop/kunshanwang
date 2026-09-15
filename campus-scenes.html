@@ -430,12 +430,18 @@ body.has-stat-pop .pop-mask{
 .summary-table td{padding:10px 12px;border-bottom:1px solid rgba(30,42,90,0.4);color:var(--text-primary);vertical-align:top;line-height:1.7;}
 .summary-table tr:last-child td{border-bottom:none;}
 .summary-table td.row-head{font-weight:700;color:var(--text-primary);white-space:nowrap;}
-.tag-urgent{display:inline-block;padding:2px 10px;border-radius:12px;font-size:11.5px;font-weight:700;background:rgba(228,0,43,0.18);color:#ff5570;border:1px solid rgba(228,0,43,0.5);}
-.tag-key{display:inline-block;padding:2px 10px;border-radius:12px;font-size:11.5px;font-weight:700;background:rgba(255,145,0,0.15);color:var(--text-orange);border:1px solid rgba(255,145,0,0.5);}
+.tag-policy{display:inline-block;padding:2px 10px;border-radius:12px;font-size:11.5px;font-weight:700;background:rgba(228,0,43,0.18);color:#ff5570;border:1px solid rgba(228,0,43,0.5);}
+.tag-demand{display:inline-block;padding:2px 10px;border-radius:12px;font-size:11.5px;font-weight:700;background:rgba(255,145,0,0.15);color:var(--text-orange);border:1px solid rgba(255,145,0,0.5);}
+.tag-scale{display:inline-block;padding:2px 10px;border-radius:12px;font-size:11.5px;font-weight:700;background:rgba(0,190,255,0.14);color:#5ad0ff;border:1px solid rgba(0,190,255,0.45);}
+.tag-strategy{display:inline-block;padding:2px 10px;border-radius:12px;font-size:11.5px;font-weight:700;background:rgba(160,110,255,0.14);color:#b58cff;border:1px solid rgba(160,110,255,0.45);}
 .tag-ok{display:inline-block;padding:2px 10px;border-radius:12px;font-size:11.5px;font-weight:700;background:rgba(0,230,118,0.12);color:var(--text-green);border:1px solid rgba(0,230,118,0.4);}
 .price-col{font-variant-numeric:tabular-nums;}
+.price-cost{color:var(--text-secondary);font-weight:500;}
 .price-buy{color:var(--text-accent);font-weight:600;}
 .price-sell{color:var(--text-gold);font-weight:600;}
+.vendor{font-size:11.5px;color:var(--text-secondary);line-height:1.65;margin-top:5px;}
+.vendor a{color:var(--text-accent);text-decoration:none;border-bottom:1px dashed rgba(0,255,209,0.45);transition:color .2s,border-color .2s;}
+.vendor a:hover{color:#fff;border-bottom-color:#fff;}
 .summary-note{padding:14px 18px;border-radius:10px;font-size:13.5px;line-height:1.9;margin-top:20px;border:1px solid;}
 .note-red{background:rgba(228,0,43,0.06);border-color:rgba(228,0,43,0.35);}
 .note-green{background:rgba(0,230,118,0.05);border-color:rgba(0,230,118,0.3);}
@@ -918,7 +924,7 @@ body.has-stat-pop .pop-mask{
 <div class="page" id="page-summary">
   <div class="hero">
     <h1>终端配置总结 · 采购建议</h1>
-    <p>按学段汇总各场景终端配置现状，区分「已有 / 待采购」，标注刚需与重点，并给出采购价、供货价双维度价格建议，为集采与市场推广提供参考。</p>
+    <p>按学段汇总各场景终端配置现状，区分「已有 / 待采购」，以政策驱动、高频刚需、市场规模、战略布局四类驱动维度标注优先级，并给出成本价、采购价、供货价三级价格建议，为集采与市场推广提供参考。</p>
     <div class="hero-stats">
       <div class="hero-stat red">
         <div class="stat-value">6</div><div class="stat-label">学段覆盖</div>
@@ -937,25 +943,24 @@ body.has-stat-pop .pop-mask{
         </div>
       </div>
       <div class="hero-stat green">
-        <div class="stat-value">9</div><div class="stat-label">刚需终端品类</div>
+        <div class="stat-value">8</div><div class="stat-label">政策驱动品类</div>
         <div class="stat-pop">
-          <div class="pop-title">刚需终端（优先集采）</div>
-          <div class="pop-item"><strong>AI防欺凌报警器</strong><span class="sub">政策驱动、普教刚需</span></div>
-          <div class="pop-item"><strong>智慧黑板/交互大屏</strong><span class="sub">教学核心装备</span></div>
-          <div class="pop-item"><strong>智慧体育终端</strong><span class="sub">中考体育改革刚需</span></div>
-          <div class="pop-item"><strong>明厨亮灶</strong><span class="sub">食品安全监管刚需</span></div>
-          <div class="pop-item"><strong>智慧宿舍/门禁</strong><span class="sub">高校宿舍管理刚需</span></div>
-          <div class="pop-item"><strong>实训终端</strong><span class="sub">职教改革刚需</span></div>
+          <div class="pop-title">政策/合规强驱动（优先集采）</div>
+          <div class="pop-item"><strong>AI防欺凌报警器</strong><span class="sub">教育部防欺凌专项</span></div>
+          <div class="pop-item"><strong>明厨亮灶</strong><span class="sub">食品安全监管要求</span></div>
           <div class="pop-item"><strong>实验室安全</strong><span class="sub">高校安全红线</span></div>
-          <div class="pop-item"><strong>晨检机器人</strong><span class="sub">幼教入园刚需</span></div>
-          <div class="pop-item"><strong>IP广播</strong><span class="sub">校园基础装备</span></div>
+          <div class="pop-item"><strong>智慧体育终端</strong><span class="sub">中考体育改革</span></div>
+          <div class="pop-item"><strong>智慧宿舍/门禁</strong><span class="sub">宿舍安全管理要求</span></div>
+          <div class="pop-item"><strong>实训终端</strong><span class="sub">职教改革要求</span></div>
+          <div class="pop-item"><strong>晨检机器人</strong><span class="sub">幼教卫生保健规范</span></div>
+          <div class="pop-item"><strong>智慧黑板</strong><span class="sub">教学装备标准</span></div>
         </div>
       </div>
       <div class="hero-stat">
-        <div class="stat-value">13</div><div class="stat-label">重点终端品类</div>
+        <div class="stat-value">14</div><div class="stat-label">重点终端品类</div>
         <div class="stat-pop">
-          <div class="pop-title">重点终端（分阶段推进）</div>
-          <div class="pop-item">智慧黑板/交互大屏、AI录播/无感评课、常态录播、AI运动视觉、体质监测、云课堂、智能阅卷、智慧考场、体育场馆、智慧停车、能耗管理、数字孪生、特教康复</div>
+          <div class="pop-title">重点终端（市场高需求/战略布局）</div>
+          <div class="pop-item">AI录播、无感扩音、智慧教室、云课堂、智能阅卷、智慧图书馆、数字孪生、体育场馆、智慧停车、能耗管理、特教康复、幼教一体机、无感扩音、AI超脑</div>
         </div>
       </div>
     </div>
@@ -971,15 +976,15 @@ body.has-stat-pop .pop-mask{
           <div class="summary-card-icon" style="background:var(--gradient-1);">普</div>
           <div>
             <div class="summary-card-title">普教（K12）</div>
-            <div class="summary-card-subtitle">10个场景 · 刚需3类 · 重点4类</div>
+            <div class="summary-card-subtitle">10个场景 · 政策驱动1类 · 高频刚需3类</div>
           </div>
         </div>
         <table class="summary-table">
           <tr><th>维度</th><th>终端配置</th></tr>
           <tr><td class="row-head">标配终端</td><td>智能学生证、AI防欺凌报警器、电子班牌、AI录播、智慧黑板、体质监测、放学管理</td></tr>
           <tr><td class="row-head">已有终端</td><td><span class="tag-ok">已有</span> 智能学生证22款（瑞翼/卡尔等）、电子班牌2款</td></tr>
-          <tr><td class="row-head">待采购终端</td><td><span class="tag-urgent">刚需</span> AI防欺凌报警器 · 体质监测<br/><span class="tag-key">重点</span> AI录播 · 智慧体育 · 智慧黑板</td></tr>
-          <tr><td class="row-head">价格建议</td><td><span class="price-buy">采购价 450-2.5万</span> · <span class="price-sell">供货价 699-3.8万</span></td></tr>
+          <tr><td class="row-head">待采购终端</td><td><span class="tag-policy">政策驱动</span> AI防欺凌报警器 · 体质监测<br/><span class="tag-demand">高频刚需</span> AI录播 · 智慧体育 · 智慧黑板</td></tr>
+          <tr><td class="row-head">价格建议</td><td><span class="price-cost">成本 400-2.2万</span> · <span class="price-buy">采购 450-2.5万</span> · <span class="price-sell">供货 0.5-2.8万</span></td></tr>
         </table>
       </div>
       <!-- 高教 -->
@@ -988,15 +993,15 @@ body.has-stat-pop .pop-mask{
           <div class="summary-card-icon" style="background:var(--gradient-2);">高</div>
           <div>
             <div class="summary-card-title">高教（高校）</div>
-            <div class="summary-card-subtitle">6个场景 · 刚需1类 · 重点5类</div>
+            <div class="summary-card-subtitle">6个场景 · 政策驱动1类 · 规模市场4类</div>
           </div>
         </div>
         <table class="summary-table">
           <tr><th>维度</th><th>终端配置</th></tr>
           <tr><td class="row-head">标配终端</td><td>实验室安全、录播/巡课、无感扩音、宿舍闸机、数字孪生、图书馆自助</td></tr>
           <tr><td class="row-head">已有终端</td><td><span class="tag-ok">已有</span> 无（待补充）</td></tr>
-          <tr><td class="row-head">待采购终端</td><td><span class="tag-urgent">刚需</span> 实验室安全终端<br/><span class="tag-key">重点</span> 录播巡课 · 宿舍闸机 · 图书馆 · 无感扩音</td></tr>
-          <tr><td class="row-head">价格建议</td><td><span class="price-buy">采购价 0.8-3万/套</span> · <span class="price-sell">供货价 1.2-4.5万/套</span></td></tr>
+          <tr><td class="row-head">待采购终端</td><td><span class="tag-policy">政策驱动</span> 实验室安全终端<br/><span class="tag-scale">规模市场</span> 录播巡课 · 宿舍闸机 · 图书馆 · 无感扩音</td></tr>
+          <tr><td class="row-head">价格建议</td><td><span class="price-cost">成本 0.7-2.7万/套</span> · <span class="price-buy">采购 0.8-3万/套</span> · <span class="price-sell">供货 0.9-3.3万/套</span></td></tr>
         </table>
       </div>
       <!-- 职教 -->
@@ -1005,15 +1010,15 @@ body.has-stat-pop .pop-mask{
           <div class="summary-card-icon" style="background:var(--gradient-3);">职</div>
           <div>
             <div class="summary-card-title">职教（高职/中职）</div>
-            <div class="summary-card-subtitle">6个场景 · 刚需1类 · 重点5类</div>
+            <div class="summary-card-subtitle">6个场景 · 政策驱动1类 · 规模市场4类</div>
           </div>
         </div>
         <table class="summary-table">
           <tr><th>维度</th><th>终端配置</th></tr>
           <tr><td class="row-head">标配终端</td><td>移动式实训教学系统、近景摄像机、实训录播、虚拟仿真、大屏</td></tr>
           <tr><td class="row-head">已有终端</td><td><span class="tag-ok">已有</span> 无（待补充）</td></tr>
-          <tr><td class="row-head">待采购终端</td><td><span class="tag-urgent">刚需</span> 智慧实训综合平台<br/><span class="tag-key">重点</span> 医护/汽车/机械/电子/餐饮实训终端</td></tr>
-          <tr><td class="row-head">价格建议</td><td><span class="price-buy">采购价 0.9-1.8万/间</span> · <span class="price-sell">供货价 1.4-2.8万/间</span></td></tr>
+          <tr><td class="row-head">待采购终端</td><td><span class="tag-policy">政策驱动</span> 智慧实训综合平台<br/><span class="tag-scale">规模市场</span> 医护/汽车/机械/电子/餐饮实训终端</td></tr>
+          <tr><td class="row-head">价格建议</td><td><span class="price-cost">成本 0.8-1.6万/间</span> · <span class="price-buy">采购 0.9-1.8万/间</span> · <span class="price-sell">供货 1-2万/间</span></td></tr>
         </table>
       </div>
       <!-- 幼教 -->
@@ -1022,15 +1027,15 @@ body.has-stat-pop .pop-mask{
           <div class="summary-card-icon" style="background:var(--gradient-3);">幼</div>
           <div>
             <div class="summary-card-title">幼教</div>
-            <div class="summary-card-subtitle">2个场景 · 刚需1类</div>
+            <div class="summary-card-subtitle">2个场景 · 政策驱动1类 · 战略布局1类</div>
           </div>
         </div>
         <table class="summary-table">
           <tr><th>维度</th><th>终端配置</th></tr>
           <tr><td class="row-head">标配终端</td><td>晨检机器人、接送终端、幼教交互一体机</td></tr>
           <tr><td class="row-head">已有终端</td><td><span class="tag-ok">已有</span> 智能学生证（复用）</td></tr>
-          <tr><td class="row-head">待采购终端</td><td><span class="tag-urgent">刚需</span> 晨检机器人<br/><span class="tag-key">重点</span> 幼教交互一体机</td></tr>
-          <tr><td class="row-head">价格建议</td><td><span class="price-buy">采购价 0.5-1万/台</span> · <span class="price-sell">供货价 0.8-1.6万/台</span></td></tr>
+          <tr><td class="row-head">待采购终端</td><td><span class="tag-policy">政策驱动</span> 晨检机器人<br/><span class="tag-strategy">战略布局</span> 幼教交互一体机</td></tr>
+          <tr><td class="row-head">价格建议</td><td><span class="price-cost">成本 0.4-0.9万/台</span> · <span class="price-buy">采购 0.45-1万/台</span> · <span class="price-sell">供货 0.5-1.1万/台</span></td></tr>
         </table>
       </div>
       <!-- 特教 -->
@@ -1039,15 +1044,15 @@ body.has-stat-pop .pop-mask{
           <div class="summary-card-icon" style="background:var(--gradient-3);">特</div>
           <div>
             <div class="summary-card-title">特教</div>
-            <div class="summary-card-subtitle">2个场景 · 重点2类</div>
+            <div class="summary-card-subtitle">2个场景 · 战略布局2类</div>
           </div>
         </div>
         <table class="summary-table">
           <tr><th>维度</th><th>终端配置</th></tr>
           <tr><td class="row-head">标配终端</td><td>手语翻译屏、无障碍终端、体感康复、言语训练</td></tr>
           <tr><td class="row-head">已有终端</td><td><span class="tag-ok">已有</span> 无（待补充）</td></tr>
-          <tr><td class="row-head">待采购终端</td><td><span class="tag-key">重点</span> 特教辅具 · 康复训练终端</td></tr>
-          <tr><td class="row-head">价格建议</td><td><span class="price-buy">采购价 0.5-1.5万/台</span> · <span class="price-sell">供货价 0.8-2.3万/台</span></td></tr>
+          <tr><td class="row-head">待采购终端</td><td><span class="tag-strategy">战略布局</span> 特教辅具 · 康复训练终端</td></tr>
+          <tr><td class="row-head">价格建议</td><td><span class="price-cost">成本 0.4-1.4万/台</span> · <span class="price-buy">采购 0.5-1.5万/台</span> · <span class="price-sell">供货 0.55-1.7万/台</span></td></tr>
         </table>
       </div>
       <!-- 通用 -->
@@ -1056,103 +1061,117 @@ body.has-stat-pop .pop-mask{
           <div class="summary-card-icon" style="background:var(--gradient-1);">通</div>
           <div>
             <div class="summary-card-title">通用（跨学段）</div>
-            <div class="summary-card-subtitle">21个场景 · 刚需4类 · 重点9类</div>
+            <div class="summary-card-subtitle">21个场景 · 政策驱动4类 · 高频刚需5类</div>
           </div>
         </div>
         <table class="summary-table">
           <tr><th>维度</th><th>终端配置</th></tr>
           <tr><td class="row-head">标配终端</td><td>AI超脑NVR、门禁闸机、消防、智慧黑板、云课堂、明厨亮灶、AI学习</td></tr>
           <tr><td class="row-head">已有终端</td><td><span class="tag-ok">已有</span> 智能学生证22款、云印章、封签机、云会议</td></tr>
-          <tr><td class="row-head">待采购终端</td><td><span class="tag-urgent">刚需</span> 智慧黑板 · 明厨亮灶 · 门禁 · AI超脑<br/><span class="tag-key">重点</span> 云课堂 · 智能阅卷 · 停车 · 能耗</td></tr>
-          <tr><td class="row-head">价格建议</td><td><span class="price-buy">采购价 0.3-2.5万/套</span> · <span class="price-sell">供货价 0.5-3.8万/套</span></td></tr>
+          <tr><td class="row-head">待采购终端</td><td><span class="tag-policy">政策驱动</span> 智慧黑板 · 明厨亮灶 · 门禁 · AI超脑<br/><span class="tag-demand">高频刚需</span> 云课堂 · 智能阅卷 · 停车 · 能耗</td></tr>
+          <tr><td class="row-head">价格建议</td><td><span class="price-cost">成本 0.03-2.2万</span> · <span class="price-buy">采购 0.04-2.5万</span> · <span class="price-sell">供货 0.05-2.8万</span></td></tr>
         </table>
       </div>
     </div>
 
     <!-- 终端采购明细表 -->
     <div class="summary-section-title">二、待采购终端明细 · 价格建议</div>
-    <div style="background:var(--gradient-card);border:1px solid var(--border-color);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow-card);">
+    <div style="background:var(--gradient-card);border:1px solid var(--border-color);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow-card);overflow-x:auto;">
       <table class="summary-table">
         <tr>
-          <th>学段</th><th>终端品类</th><th>刚需/重点</th><th>采购价建议（成本/集采）</th><th>供货价建议（对校/对教育局）</th>
+          <th>学段</th><th>终端品类</th><th>驱动维度</th><th>头部厂家 / 产品形态</th><th>成本价（参考）</th><th>采购价（+10%）</th><th>供货价（+10%）</th>
         </tr>
         <tr>
           <td rowspan="4" class="row-head">普教</td>
-          <td>AI防欺凌语音报警器（壁挂式）</td><td><span class="tag-urgent">刚需</span></td>
-          <td class="price-buy">450-800元/台</td><td class="price-sell">699-1,199元/台</td>
+          <td>AI防欺凌语音报警器（壁挂式）</td><td><span class="tag-policy">政策驱动</span></td>
+          <td><div class="vendor">艾礼安、佳吉安、领航技术<br/>参考：<a href="https://m.1688.com/offer/809623009975.html" target="_blank" rel="noopener">1688·艾礼安校园防霸凌4G报警器 ¥599/台</a></div></td>
+          <td class="price-cost">410-730元/台</td><td class="price-buy">450-800元/台</td><td class="price-sell">500-880元/台</td>
         </tr>
         <tr>
-          <td>智慧黑板（86/98寸交互平板）</td><td><span class="tag-urgent">刚需</span></td>
-          <td class="price-buy">1.2-2.5万元/台</td><td class="price-sell">1.8-3.8万元/台</td>
+          <td>智慧黑板（86/98寸交互平板）</td><td><span class="tag-policy">政策驱动</span></td>
+          <td><div class="vendor">希沃 / 鸿合 / 海信<br/>参考：<a href="http://www.ccgp.gov.cn/cggg/dfgg/zbgg/202510/t20251030_25603385.htm" target="_blank" rel="noopener">政府采购 希沃BG86EC 中标价1.595万/台</a></div></td>
+          <td class="price-cost">1.1-2.3万元/台</td><td class="price-buy">1.2-2.5万元/台</td><td class="price-sell">1.3-2.8万元/台</td>
         </tr>
         <tr>
-          <td>AI录播主机+摄像机套装</td><td><span class="tag-key">重点</span></td>
-          <td class="price-buy">0.8-1.8万元/间</td><td class="price-sell">1.2-2.8万元/间</td>
+          <td>AI录播主机+摄像机套装</td><td><span class="tag-demand">高频刚需</span></td>
+          <td><div class="vendor">奥威亚 / 中庆 / itc保伦<br/>参考：<a href="http://www.ccgp.gov.cn/cggg/dfgg/cjgg/202609/t20260914_27322546.htm" target="_blank" rel="noopener">政府采购网岳池中学直录播教室中标公告</a></div></td>
+          <td class="price-cost">0.7-1.6万元/间</td><td class="price-buy">0.8-1.8万元/间</td><td class="price-sell">0.9-2万元/间</td>
         </tr>
         <tr>
-          <td>智慧体育（AI运动视觉+体质监测一体机）</td><td><span class="tag-key">重点</span></td>
-          <td class="price-buy">0.6-1.5万元/套</td><td class="price-sell">0.9-2.3万元/套</td>
+          <td>智慧体育（AI运动视觉+体质监测一体机）</td><td><span class="tag-demand">高频刚需</span></td>
+          <td><div class="vendor">融梦科技 / 万腾 / 乐佳利康<br/>参考：<a href="http://www.ccgp.gov.cn/cggg/dfgg/cjgg/202609/t20260915_27326736.htm" target="_blank" rel="noopener">政府采购网大庆教育局体育测试AI设备中标公告</a></div></td>
+          <td class="price-cost">0.55-1.4万元/套</td><td class="price-buy">0.6-1.5万元/套</td><td class="price-sell">0.66-1.65万元/套</td>
         </tr>
         <tr>
           <td rowspan="3" class="row-head">高教</td>
-          <td>实验室安全AI+IoT终端套装</td><td><span class="tag-urgent">刚需</span></td>
-          <td class="price-buy">0.8-1.5万元/间</td><td class="price-sell">1.2-2.3万元/间</td>
+          <td>实验室安全AI+IoT终端套装</td><td><span class="tag-policy">政策驱动</span></td>
+          <td><div class="vendor">海康 / 大华 / 华为<br/>参考：<a href="http://www.ccgp.gov.cn/cggg/dfgg/zbgg/202609/t20260911_27311143.htm" target="_blank" rel="noopener">政府采购网东莞理工AI智能体中台采购结果</a></div></td>
+          <td class="price-cost">0.7-1.4万元/间</td><td class="price-buy">0.8-1.5万元/间</td><td class="price-sell">0.9-1.7万元/间</td>
         </tr>
         <tr>
-          <td>AI巡课摄像机+分析服务器</td><td><span class="tag-key">重点</span></td>
-          <td class="price-buy">1.5-3万元/套</td><td class="price-sell">2.3-4.5万元/套</td>
+          <td>AI巡课摄像机+分析服务器</td><td><span class="tag-scale">规模市场</span></td>
+          <td><div class="vendor">海康威视 / 大华 / 天地伟业<br/>参考：<a href="https://chancheng.1688.com/shop/www/jiage/-BAA3BFB5CDF8C2E7D3B2C5CCC2BCCFF1BBFA.html" target="_blank" rel="noopener">1688海康NVR行情页</a></div></td>
+          <td class="price-cost">1.4-2.7万元/套</td><td class="price-buy">1.5-3万元/套</td><td class="price-sell">1.65-3.3万元/套</td>
         </tr>
         <tr>
-          <td>图书馆自助借还/盘点机器人</td><td><span class="tag-key">重点</span></td>
-          <td class="price-buy">1-2万元/台</td><td class="price-sell">1.5-3万元/台</td>
+          <td>图书馆自助借还/盘点机器人</td><td><span class="tag-scale">规模市场</span></td>
+          <td><div class="vendor">远望谷 / 原邑科技 / 睿闻<br/>参考：<a href="https://lib.chzu.edu.cn/2026/0703/c4687a346704/page.htm" target="_blank" rel="noopener">滁州学院RFID自助借还机比价3.2万/台</a></div></td>
+          <td class="price-cost">0.9-1.8万元/台</td><td class="price-buy">1-2万元/台</td><td class="price-sell">1.1-2.2万元/台</td>
         </tr>
         <tr>
           <td rowspan="2" class="row-head">职教</td>
-          <td>移动式实训教学系统</td><td><span class="tag-urgent">刚需</span></td>
-          <td class="price-buy">0.9-1.5万元/间</td><td class="price-sell">1.4-2.3万元/间</td>
+          <td>移动式实训教学系统</td><td><span class="tag-policy">政策驱动</span></td>
+          <td><div class="vendor">itc保伦 / 百科荣创 / 世纪远景<br/>参考：<a href="http://www.ccgp.gov.cn/cggg/dfgg/zbgg/202609/t20260914_27319394.htm" target="_blank" rel="noopener">政府采购网衡东县职业中专实训基地中标公告</a></div></td>
+          <td class="price-cost">0.8-1.4万元/间</td><td class="price-buy">0.9-1.5万元/间</td><td class="price-sell">1-1.65万元/间</td>
         </tr>
         <tr>
-          <td>医护/汽修/机械实训摄像套装</td><td><span class="tag-key">重点</span></td>
-          <td class="price-buy">0.8-1.8万元/间</td><td class="price-sell">1.2-2.8万元/间</td>
+          <td>医护/汽修/机械实训摄像套装</td><td><span class="tag-scale">规模市场</span></td>
+          <td><div class="vendor">海康 / 大华 / itc<br/>参考：<a href="http://www.ccgp.gov.cn/cggg/dfgg/zbgg/202609/t20260911_27311655.htm" target="_blank" rel="noopener">政府采购网广东机械技师学院实训设备中标</a></div></td>
+          <td class="price-cost">0.7-1.6万元/间</td><td class="price-buy">0.8-1.8万元/间</td><td class="price-sell">0.9-2万元/间</td>
         </tr>
         <tr>
           <td class="row-head">幼教</td>
-          <td>晨检机器人、幼教交互一体机</td><td><span class="tag-urgent">刚需</span></td>
-          <td class="price-buy">0.5-1万元/台</td><td class="price-sell">0.8-1.6万元/台</td>
+          <td>晨检机器人、幼教交互一体机</td><td><span class="tag-policy">政策驱动</span></td>
+          <td><div class="vendor">慧示 / 智趣 / 视通智能<br/>参考：<a href="http://buxiuwxwwwhohosdl.ok.1688.com/shop/www/jiage/-BBA5B6AFBDCCD1A7B5E7D7D3B0D7B0E5.html" target="_blank" rel="noopener">1688幼教触摸一体机行情页</a></div></td>
+          <td class="price-cost">0.4-0.9万元/台</td><td class="price-buy">0.45-1万元/台</td><td class="price-sell">0.5-1.1万元/台</td>
         </tr>
         <tr>
           <td class="row-head">特教</td>
-          <td>手语翻译屏、体感康复训练终端</td><td><span class="tag-key">重点</span></td>
-          <td class="price-buy">0.5-1.5万元/台</td><td class="price-sell">0.8-2.3万元/台</td>
+          <td>手语翻译屏、体感康复训练终端</td><td><span class="tag-strategy">战略布局</span></td>
+          <td><div class="vendor">尚健医疗 / 嘉会医疗 / 乐佳利康<br/>参考：<a href="http://www.ccgp.gov.cn/cggg/dfgg/zbgg/202609/t20260909_27296237.htm" target="_blank" rel="noopener">政府采购网儿童康复科设备成交公告</a></div></td>
+          <td class="price-cost">0.4-1.4万元/台</td><td class="price-buy">0.45-1.5万元/台</td><td class="price-sell">0.5-1.65万元/台</td>
         </tr>
         <tr>
           <td rowspan="3" class="row-head">通用</td>
-          <td>智慧黑板/交互大屏</td><td><span class="tag-urgent">刚需</span></td>
-          <td class="price-buy">1.2-2.5万元/台</td><td class="price-sell">1.8-3.8万元/台</td>
+          <td>智慧黑板/交互大屏</td><td><span class="tag-policy">政策驱动</span></td>
+          <td><div class="vendor">希沃 / 鸿合 / 海信<br/>参考：<a href="http://www.ccgp.gov.cn/cggg/dfgg/zbgg/202510/t20251014_25500433.htm" target="_blank" rel="noopener">政府采购网智慧黑板60套中标价1.655万/台</a></div></td>
+          <td class="price-cost">1.1-2.3万元/台</td><td class="price-buy">1.2-2.5万元/台</td><td class="price-sell">1.3-2.8万元/台</td>
         </tr>
         <tr>
-          <td>AI超脑NVR+智能应用服务器</td><td><span class="tag-urgent">刚需</span></td>
-          <td class="price-buy">1.5-3万元/套</td><td class="price-sell">2.3-4.5万元/套</td>
+          <td>AI超脑NVR+智能应用服务器</td><td><span class="tag-policy">政策驱动</span></td>
+          <td><div class="vendor">海康威视 / 中维世纪 / 大华<br/>参考：<a href="https://m.1688.com/offer/1079664203500.html" target="_blank" rel="noopener">1688海康DS-8864N-R8 NVR ¥1,108-1,510</a></div></td>
+          <td class="price-cost">1.4-2.7万元/套</td><td class="price-buy">1.5-3万元/套</td><td class="price-sell">1.65-3.3万元/套</td>
         </tr>
         <tr>
-          <td>明厨亮灶AI摄像头、人脸闸机</td><td><span class="tag-urgent">刚需</span></td>
-          <td class="price-buy">0.3-0.8万元/套</td><td class="price-sell">0.5-1.2万元/套</td>
+          <td>明厨亮灶AI摄像头、人脸闸机</td><td><span class="tag-policy">政策驱动</span></td>
+          <td><div class="vendor">海康 / 大华 / 纯安佳<br/>参考：<a href="http://www.ccgp.gov.cn/cggg/zygg/zbgg/202609/t20260914_27323008.htm" target="_blank" rel="noopener">政府采购网北大食堂明厨亮灶中标公告</a></div></td>
+          <td class="price-cost">300-7,000元/套</td><td class="price-buy">330-7,700元/套</td><td class="price-sell">360-8,500元/套</td>
         </tr>
       </table>
     </div>
 
     <!-- 采购建议 -->
     <div class="summary-note note-red">
-      <strong style="color:var(--ctc-red-light);">① 优先集采（刚需，政策/合规驱动）：</strong>AI防欺凌报警器、智慧黑板、智慧体育终端、明厨亮灶、智慧宿舍/门禁、实训终端、实验室安全 —— 市场需求刚性、政策要求明确，建议2026年内完成集采入库。
+      <strong style="color:var(--ctc-red-light);">① 优先集采（政策/合规驱动）：</strong>AI防欺凌报警器、智慧黑板、明厨亮灶、智慧宿舍/门禁、智慧体育终端、实训终端、实验室安全 —— 政策要求明确、合规刚需，建议2026年内完成集采入库。
     </div>
     <div class="summary-note note-orange">
-      <strong style="color:var(--text-orange);">② 重点推进（教学提质/降本增效）：</strong>AI录播、无感扩音、智慧教室、云课堂、智慧阅卷、智慧图书馆、数字孪生 —— 需求明确但预算弹性大，建议与教育局/高校智慧校园项目打包推广。
+      <strong style="color:var(--text-orange);">② 重点推进（高频刚需/规模市场）：</strong>AI录播、智慧体育、无感扩音、智慧教室、云课堂、智慧阅卷、智慧图书馆、数字孪生 —— 市场需求大、付费意愿高，建议与教育局/高校智慧校园项目打包推广。
     </div>
     <div class="summary-note note-green">
-      <strong style="color:var(--text-green);">③ 已覆盖（无需新增集采）：</strong>智能学生证（22款）、电子班牌（2款）、量子云印章（4款）、云会议（华为/MAXHUB）—— 已有成熟产品，重点做渠道下沉与场景化打包。
+      <strong style="color:var(--text-green);">③ 战略布局（差异化储备）：</strong>特教康复终端、幼教交互一体机、数字孪生 —— 客户付费意愿强、竞争壁垒高，建议依托标杆项目提前卡位。
     </div>
     <div class="summary-note" style="background:rgba(100,255,218,0.05);border-color:rgba(100,255,218,0.3);">
-      <strong style="color:var(--text-accent);">定价策略建议：</strong>供货价 ≈ 采购价 × 1.5-1.6（含安装、平台、服务费）；对教育局集采按保本微利报价（毛利率25-30%），对学校零售按市场价（毛利率40%+）；建议推出"终端+平台+连接"打包方案，以连接订阅收入弥补终端价格竞争。
+      <strong style="color:var(--text-accent);">定价策略建议：</strong>供货价 ≈ 采购价 × 1.1（含安装、平台、服务费，差价约10个点）；成本价按市场调研与中标价测算，采购价=成本价×1.1（含税运、质保），供货价=采购价×1.1（含安装调试、平台服务）。对教育局集采按保本微利报价，对学校零售可上浮至15-20个点；建议推出"终端+平台+连接"打包方案，以连接订阅收入弥补终端价格竞争。
     </div>
   </div>
 </div>
