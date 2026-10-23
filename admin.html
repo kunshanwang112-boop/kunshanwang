@@ -49,6 +49,16 @@ td.num,th.num{text-align:center}
 .block h2{font-size:17px;margin-bottom:4px}
 .block .meta{font-size:12px;color:#6b7788;margin-bottom:12px}
 .qr-img{width:170px;height:170px;border:1px solid #e3e8f0;border-radius:8px}
+.pager{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:14px 0 0;background:#fff;border:1px solid #e3e8f0;border-radius:10px;padding:10px}
+.pager .pginfo{font-size:13px;color:#6b7788;align-self:center;margin-right:6px}
+.pgbtn{border:1px solid #d4dbe6;background:#fff;border-radius:6px;padding:8px 12px;font-size:14px;cursor:pointer}
+.pgbtn.on{background:#c00000;color:#fff;border-color:#c00000}
+.pgbtn:disabled{opacity:.4;cursor:not-allowed}
+.pgbtn span{font-size:11px;opacity:.8}
+input.over{border:2px solid #c00000 !important;background:#fff6f6}
+.tabs{display:flex;gap:10px;margin-bottom:14px}
+.tab{border:1px solid #c00000;background:#fff;color:#c00000;border-radius:8px;padding:10px 24px;font-size:15px;cursor:pointer}
+.tab.on{background:#c00000;color:#fff}
 
 .toolbar{margin:0 auto 16px}
 .refresh{background:#fff;border:1px solid #c00000;color:#c00000;border-radius:6px;padding:8px 14px;cursor:pointer}
@@ -83,11 +93,16 @@ async function load(){
   }catch(err){ e('blocks').innerHTML='<div class="empty">加载失败，请检查后端地址</div>'; }
 }
 function render(data,pwd){
-  const box=e('blocks'); let html='';
-  for(const rk in data){
+  const box=e('blocks'); 
+  const rks=Object.keys(data);
+  // 顶部Tab：初评/复审分开展示
+  let html='<div class="tabs">';
+  rks.forEach(rk=>{ html+='<button class="tab" id="tab-'+rk+'" onclick="showRound(''+rk+'')">'+data[rk].round_name+'</button>'; });
+  html+='</div>';
+  for(const rk of rks){
     const rd=data[rk];
     const dimNames=(rd.dims||[]).map(d=>d.name);
-    html+='<div class="block"><h2>'+rd.round_name+'</h2><div class="meta">有效专家 '+rd.judge_count+' 人 · 案例 '+rd.case_count+' 个</div>';
+    html+='<div class="block roundblk" id="blk-'+rk+'" style="display:none"><h2>'+rd.round_name+'</h2><div class="meta">有效专家 '+rd.judge_count+' 人 · 案例 '+rd.case_count+' 个</div>';
 
     // ① 提交记录（评委名单+时间）
     html+='<div class="sub-title">① 提交记录（同名重复提交仅保留最新）</div>';
@@ -135,5 +150,12 @@ function render(data,pwd){
   }
   html+='</div></div>';
   box.innerHTML=html;
+  showRound(rks[0]);
+}
+function showRound(rk){
+  document.querySelectorAll('.roundblk').forEach(b=>{ b.style.display='none'; });
+  document.querySelectorAll('.tab').forEach(t=>{ t.classList.remove('on'); });
+  const blk=document.getElementById('blk-'+rk); if(blk) blk.style.display='block';
+  const tb=document.getElementById('tab-'+rk); if(tb) tb.classList.add('on');
 }
 </script></body></html>
