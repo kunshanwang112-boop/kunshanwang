@@ -32,7 +32,14 @@ header p{font-size:13px;opacity:.92;margin-top:4px}
 .bar #msg{font-size:13px;max-width:40%}
 #msg.ok{color:#2e9e5b}
 #msg.err{color:#c00000}
-.submit-btn{background:#c00000;color:#fff;border:0;border-radius:8px;padding:12px 30px;font-size:16px;cursor:pointer}
+.submit-btn{background:#c00000;color:#fff;border:0;border-radius:8px;padding:12px 26px;font-size:16px;cursor:pointer}
+.save-btn{background:#5a6a7a;color:#fff;border:0;border-radius:8px;padding:12px 20px;font-size:14px;cursor:pointer;margin-right:8px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:99}
+.mbox{background:#fff;border-radius:12px;padding:26px 20px;width:88%;max-width:340px;text-align:center}
+.mbox p{font-size:15px;color:#1f2d3d;margin-bottom:20px;line-height:1.6}
+.mbox button{border:0;border-radius:8px;padding:11px 20px;font-size:14px;cursor:pointer;margin:0 6px;font-weight:600}
+.mbox .cancel{background:#eef1f5;color:#4b5563}
+.mbox .okbtn{background:#c00000;color:#fff}
 .submit-btn:disabled{opacity:.6}
 .btn{display:inline-block;background:#c00000;color:#fff;border:0;border-radius:6px;padding:10px 18px;font-size:15px;text-decoration:none;margin-right:10px}
 .card{background:#fff;border:1px solid #e3e8f0;border-radius:10px;padding:22px;margin-bottom:16px}
@@ -72,14 +79,22 @@ input.over{border:2px solid #c00000 !important;background:#fff6f6}
   <div class="pager" id="pager"></div>
   <div class="bar">
     <span class="count">已填总分：<span id="filled">0</span>/10（全部答完才能提交）</span>
-    <span id="msg"></span><button class="submit-btn" onclick="submit()">提交打分</button>
+    <span id="msg"></span><button class="save-btn" onclick="saveDraft(false)">保存</button><button class="submit-btn" onclick="submit()">提交打分</button>
   </div>
+  <div class="modal" id="confirmModal"><div class="mbox">
+    <p id="confirmMsg"></p>
+    <button class="cancel" id="btnCancel">返回补填</button>
+    <button class="okbtn" id="btnOk">确认提交</button>
+  </div></div>
 </div>
 <script src="config.js"></script>
 <script>
 const ROUND="fushen";
 const CASES=["案例1", "案例2", "案例3", "案例4", "案例5", "案例6", "案例7", "案例8", "案例9", "案例10"];
 const DIMS=[{"name": "立足实际场景", "max": 20}, {"name": "体现赋能价值", "max": 20}, {"name": "成效真实可验证", "max": 20}, {"name": "坚持原创合规", "max": 10}, {"name": "具备推广价值", "max": 30}];
+const PAGE_SIZE=10;
+let curPage=0;
+const totalPages=Math.max(1,Math.ceil(CASES.length/PAGE_SIZE));
 (function(){
   const wrap=document.getElementById('caseList');
   CASES.forEach((c,idx)=>{
@@ -94,10 +109,51 @@ const DIMS=[{"name": "立足实际场景", "max": 20}, {"name": "体现赋能价
     wrap.appendChild(card);
   });
   renderPager(); showPage(0); refreshFilled();
+  loadDraft();
+  document.getElementById('caseList').addEventListener('input',autoDraft);
+  document.getElementById('judge').addEventListener('input',autoDraft);
 })();
-const PAGE_SIZE=10;
-let curPage=0;
-const totalPages=Math.max(1,Math.ceil(CASES.length/PAGE_SIZE));
+function saveDraft(silent){
+  const d={judge:document.getElementById('judge').value, scores:{}};
+  document.querySelectorAll('.case').forEach(card=>{
+    const dims={};
+    card.querySelectorAll('.dim input').forEach(i=>{ if(i.value!=='') dims[i.dataset.dim]=i.value; });
+    d.scores[card.dataset.i]={dims,total:card.querySelector('.total-input').value};
+  });
+  try{
+    localStorage.setItem('scoring_draft_'+ROUND, JSON.stringify(d));
+    if(!silent) flash('草稿已保存，下次进入自动恢复','ok');
+  }catch(e){ if(!silent) flash('草稿保存失败','err'); }
+}
+let _draftT=null;
+function autoDraft(){ clearTimeout(_draftT); _draftT=setTimeout(()=>saveDraft(true),800); }
+function loadDraft(){
+  try{
+    const raw=localStorage.getItem('scoring_draft_'+ROUND);
+    if(!raw) return;
+    const d=JSON.parse(raw);
+    if(d.judge) document.getElementById('judge').value=d.judge;
+    Object.keys(d.scores||{}).forEach(idx=>{
+      const card=document.querySelector('.case[data-i="'+idx+'"]');
+      if(!card) return;
+      const s=d.scores[idx]||{};
+      Object.keys(s.dims||{}).forEach(k=>{
+        const inp=[...card.querySelectorAll('.dim input')].find(i=>i.dataset.dim===k);
+        if(inp && s.dims[k]!=='') inp.value=s.dims[k];
+      });
+      if(s.total) card.querySelector('.total-input').value=s.total;
+      recalc(card);
+    });
+    refreshFilled();
+    flash('已恢复上次保存的草稿','ok');
+  }catch(e){}
+}
+function askConfirm(msg,onOk){
+  document.getElementById('confirmMsg').textContent=msg;
+  document.getElementById('confirmModal').style.display='flex';
+  document.getElementById('btnOk').onclick=()=>{ document.getElementById('confirmModal').style.display='none'; onOk(); };
+  document.getElementById('btnCancel').onclick=()=>{ document.getElementById('confirmModal').style.display='none'; };
+}
 function showPage(p){
   if(p<0) p=0; if(p>totalPages-1) p=totalPages-1;
   curPage=p;
@@ -146,13 +202,12 @@ function badInput(inp){
   return false;
 }
 function liveCheck(card){
-  let bad=false;
+  let bad=false, over100=false;
   card.querySelectorAll('input').forEach(i=>{
-    if(badInput(i)){ i.classList.add('over'); bad=true; } else i.classList.remove('over');
+    if(badInput(i)){ i.classList.add('over'); bad=true; if(i.classList.contains('total-input') && +i.value>100) over100=true; } else i.classList.remove('over');
   });
-  if(bad) flash('分值不合法：须为数字、不超上限、最多两位小数','err');
-  const ti=card.querySelector('.total-input');
-  if(ti.value!=='' && +ti.value>100) flash('总分不能超过100','err');
+  if(over100) flash('总分不能超过100','err');
+  else if(bad) flash('分值不合法：须为数字、不超上限、最多两位小数','err');
 }
 function recalc(card){
   const dis=card.querySelectorAll('.dim input');
@@ -168,16 +223,7 @@ function recalc(card){
 async function submit(){
   const judge=document.getElementById('judge').value.trim();
   if(!judge){ flash('请填写评委姓名','err'); return; }
-  const miss=[];
-  document.querySelectorAll('.case').forEach(card=>{
-    if(card.querySelector('.total-input').value===''){ miss.push(card); card.classList.add('err'); }
-  });
-  if(miss.length){
-    const p=Math.floor(+miss[0].dataset.i/PAGE_SIZE);
-    showPage(p);
-    flash('还有 '+miss.length+' 个案例未填总分（已跳至第'+(p+1)+'页），全部答完才能提交','err');
-    return;
-  }
+  // 非法分值必须拦截（不参与确认）
   const bads=[];
   document.querySelectorAll('.case').forEach(card=>{
     card.querySelectorAll('input').forEach(i=>{ if(badInput(i)){ i.classList.add('over'); bads.push(i); } });
@@ -188,18 +234,35 @@ async function submit(){
     flash('有 '+bads.length+' 处分值不合法（超上限或超过两位小数），已标红','err');
     return;
   }
+  // 收集已填（未填的允许部分提交）
   const scores=[];
+  const miss=[];
   document.querySelectorAll('.case').forEach(card=>{
     const idx=+card.dataset.i; const dims={};
     card.querySelectorAll('.dim input').forEach(inp=>{ if(inp.value!=='') dims[inp.dataset.dim]=+inp.value; });
-    scores.push({case:idx,dims,total:+card.querySelector('.total-input').value});
+    const t=card.querySelector('.total-input').value.trim();
+    if(t===''){ miss.push(card); return; }
+    scores.push({case:idx,dims,total:+t});
   });
+  if(scores.length===0){
+    flash('请至少填写一个案例的总分（可先点保存草稿）','err');
+    return;
+  }
+  if(miss.length){
+    askConfirm('还有 '+miss.length+' 个案例未填总分。
+确认仅提交已填写的 '+scores.length+' 个案例吗？
+（也可返回补填后再提交；后续补填可再次提交，同名覆盖）',()=>doSubmit(judge,scores));
+    return;
+  }
+  doSubmit(judge,scores);
+}
+async function doSubmit(judge,scores){
   const body={round:ROUND,judge,scores};
   const btn=document.querySelector('.submit-btn'); btn.disabled=true;
   try{
     const r=await fetch(SCORING.BACKEND_URL+'/api/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     const j=await r.json();
-    if(j.ok){ location.replace('thanks.html?j='+encodeURIComponent(judge)); return; }
+    if(j.ok){ try{localStorage.removeItem('scoring_draft_'+ROUND);}catch(e){} location.replace('thanks.html?j='+encodeURIComponent(judge)); return; }
     flash(j.msg,'err');
   }catch(e){ flash('提交失败，请检查网络','err'); }
   btn.disabled=false;
