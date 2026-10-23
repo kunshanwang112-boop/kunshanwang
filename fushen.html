@@ -24,6 +24,9 @@ header p{font-size:13px;opacity:.92;margin-top:4px}
 .total .star{color:#c00000}
 .total input{width:90px;border:2px solid #c00000;border-radius:6px;padding:8px;font-size:16px;font-weight:700;text-align:center}
 .total .hint{font-size:12px;color:#6b7788}
+.total input.auto{background:#e8f7ee;border-color:#2e9e5b}
+.case.err{border:2px solid #c00000;background:#fff6f6}
+.dim input:disabled{background:#f5f7fa}
 .bar{position:sticky;bottom:0;background:#fff;border:1px solid #e3e8f0;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:14px;margin-top:18px;box-shadow:0 -4px 12px rgba(0,0,0,.05)}
 .bar .count{font-size:13px;color:#4b5563;flex:1}
 .bar #msg{font-size:13px;max-width:40%}
@@ -51,7 +54,7 @@ td.num,th.num{text-align:center}
 </head>
 <body>
 <div class="wrap">
-  <header><h1>复审打分</h1><p>请为每个案例填写总分（0–100，必填）；5个维度分选填。共10个案例。</p></header>
+  <header><h1>复审打分</h1><p>每个案例必须填写总分（0–100必填）；若5个维度分全部填写，总分将自动计算并锁定。共10个案例。</p></header>
   <div class="form-meta">
     <div class="field"><label>评委姓名（必填·实名）</label><input id="judge" autocomplete="name" placeholder="请输入姓名"></div>
   </div>
@@ -73,10 +76,22 @@ const DIMS=[{"name": "立足实际场景", "max": 20}, {"name": "体现赋能价
     let h='<div class="case-title"><span class="no">'+(idx+1)+'</span><b>'+c+'</b></div><div class="dims">';
     DIMS.forEach(d=>{ h+='<div class="dim"><label>'+d.name+'（≤'+d.max+'分）</label><input type="number" min="0" max="'+d.max+'" data-dim="'+d.name+'" placeholder="选填"></div>'; });
     h+='</div><div class="total"><label>总分<span class="star">*</span></label><input type="number" min="0" max="100" placeholder="0-100" class="total-input"><span class="hint">必填</span></div>';
-    card.innerHTML=h; wrap.appendChild(card);
+    card.innerHTML=h;
+    card.querySelectorAll('.dim input').forEach(di=>di.addEventListener('input',()=>recalc(card)));
+    const ti=card.querySelector('.total-input');
+    ti.addEventListener('input',()=>{card.classList.remove('err'); refreshFilled();});
+    wrap.appendChild(card);
   });
-  document.querySelectorAll('.total-input').forEach(i=>i.addEventListener('input',refreshFilled));
 })();
+function recalc(card){
+  const dis=card.querySelectorAll('.dim input');
+  const t=card.querySelector('.total-input');
+  let full=true, sum=0;
+  dis.forEach(i=>{ if(i.value===''){full=false;} else {sum+=+i.value;} });
+  if(full){ t.value=sum; t.readOnly=true; t.classList.add('auto'); }
+  else { t.readOnly=false; t.classList.remove('auto'); }
+  card.classList.remove('err');
+}
 function refreshFilled(){
   let n=0; document.querySelectorAll('.total-input').forEach(i=>{ if(i.value!=='') n++; });
   document.getElementById('filled').textContent=n;
@@ -84,16 +99,22 @@ function refreshFilled(){
 async function submit(){
   const judge=document.getElementById('judge').value.trim();
   if(!judge){ flash('请填写评委姓名','err'); return; }
+  // 必填校验：所有案例总分不能为空
+  const miss=[];
+  document.querySelectorAll('.case').forEach(card=>{
+    if(card.querySelector('.total-input').value===''){ miss.push(card); card.classList.add('err'); } });
+  if(miss.length){
+    flash('还有 '+miss.length+' 个案例未填总分，已标红，请补齐','err');
+    miss[0].scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
   const scores=[];
-  let any=false;
   document.querySelectorAll('.case').forEach(card=>{
     const idx=+card.dataset.i; const dims={};
     card.querySelectorAll('.dim input').forEach(inp=>{ if(inp.value!=='') dims[inp.dataset.dim]=+inp.value; });
     const t=card.querySelector('.total-input').value.trim();
-    if(t!=='') any=true;
-    scores.push({case:idx,dims,total:t===''?null:+t});
+    scores.push({case:idx,dims,total:+t});
   });
-  if(!any){ flash('请至少填写一个案例的总分','err'); return; }
   const body={round:ROUND,judge,scores};
   const btn=document.querySelector('.submit-btn'); btn.disabled=true;
   try{
