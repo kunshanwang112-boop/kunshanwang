@@ -51,20 +51,20 @@ td.num,th.num{text-align:center}
 </head>
 <body>
 <div class="wrap">
-  <header><h1>初评打分</h1><p>请为每个案例填写总分（0–100，必填）；5个维度分选填。共60个案例。</p></header>
+  <header><h1>初评打分</h1><p>请为每个案例填写总分（0–100，必填）；5个维度分选填。共10个案例。</p></header>
   <div class="form-meta">
     <div class="field"><label>评委姓名（必填·实名）</label><input id="judge" autocomplete="name" placeholder="请输入姓名"></div>
   </div>
   <div id="caseList"></div>
   <div class="bar">
-    <span class="count">已填总分：<span id="filled">0</span>/60</span>
+    <span class="count">已填总分：<span id="filled">0</span>/10</span>
     <span id="msg"></span><button class="submit-btn" onclick="submit()">提交打分</button>
   </div>
 </div>
 <script src="config.js"></script>
 <script>
 const ROUND="chuping";
-const CASES=["案例1", "案例2", "案例3", "案例4", "案例5", "案例6", "案例7", "案例8", "案例9", "案例10", "案例11", "案例12", "案例13", "案例14", "案例15", "案例16", "案例17", "案例18", "案例19", "案例20", "案例21", "案例22", "案例23", "案例24", "案例25", "案例26", "案例27", "案例28", "案例29", "案例30", "案例31", "案例32", "案例33", "案例34", "案例35", "案例36", "案例37", "案例38", "案例39", "案例40", "案例41", "案例42", "案例43", "案例44", "案例45", "案例46", "案例47", "案例48", "案例49", "案例50", "案例51", "案例52", "案例53", "案例54", "案例55", "案例56", "案例57", "案例58", "案例59", "案例60"];
+const CASES=["案例1", "案例2", "案例3", "案例4", "案例5", "案例6", "案例7", "案例8", "案例9", "案例10"];
 const DIMS=[{"name": "立足实际场景", "max": 20}, {"name": "体现赋能价值", "max": 20}, {"name": "成效真实可验证", "max": 20}, {"name": "坚持原创合规", "max": 10}, {"name": "具备推广价值", "max": 30}];
 (function(){
   const wrap=document.getElementById('caseList');
