@@ -23,6 +23,9 @@ header p{font-size:13px;opacity:.92;margin-top:4px}
 .total .star{color:#c00000}
 .total input{width:90px;border:2px solid #c00000;border-radius:6px;padding:8px;font-size:16px;font-weight:700;text-align:center}
 .total .hint{font-size:12px;color:#6b7788}
+.total input.auto{background:#e8f7ee;border-color:#2e9e5b}
+.case.err{border:2px solid #c00000;background:#fff6f6}
+.dim input:disabled{background:#f5f7fa}
 .bar{position:sticky;bottom:0;background:#fff;border:1px solid #e3e8f0;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:14px;margin-top:18px;box-shadow:0 -4px 12px rgba(0,0,0,.05)}
 .bar .count{font-size:13px;color:#4b5563;flex:1}
 .bar #msg{font-size:13px;max-width:40%}
@@ -52,13 +55,20 @@ td.num,th.num{text-align:center}
 .pwd{display:flex;gap:10px;margin-bottom:16px}
 .pwd input{flex:1;border:1px solid #dbe4ea;border-radius:6px;padding:10px;font-size:15px}
 .qr-row{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start}
+.sub-title{font-size:15px;font-weight:600;margin:18px 0 8px;color:#1f2d3d}
+details.judge-box{border:1px solid #e3e8f0;border-radius:8px;margin-bottom:8px;background:#fff}
+details.judge-box summary{cursor:pointer;padding:10px 14px;font-size:14px;font-weight:600;list-style:none}
+details.judge-box summary::before{content:'▸ ';color:#c00000}
+details.judge-box[open] summary::before{content:'▾ '}
+details.judge-box .inner{padding:6px 14px 14px;overflow-x:auto}
+small.dim-head{color:#9aa5b1;font-weight:400}
 </style></head>
 <body><div class="wrap">
-<h1>成绩统计（去最高最低分取平均）</h1>
+<h1>评分统计管理台</h1>
 <div class="toolbar"><button class="refresh" onclick="location.reload()">刷新</button> <a href="index.html">← 返回首页</a></div>
 <div class="pwd"><input type="password" id="pwd" placeholder="管理口令"><button class="refresh" onclick="load(true)">加载结果</button></div>
 <div id="blocks"></div>
-<div class="note">计分口径：每案例取全部评委总分，去掉一个最高分和一个最低分后取平均（评委≤2直接平均）；同名评委重复提交覆盖。</div>
+<div class="note">计分口径：每案例取全部评委总分，去掉一个最高分和一个最低分后取平均（评委≤2直接平均）；同名评委重复提交覆盖；去极值后保留两位小数。</div>
 </div>
 <script src="config.js"></script>
 <script>
@@ -76,14 +86,46 @@ function render(data,pwd){
   const box=e('blocks'); let html='';
   for(const rk in data){
     const rd=data[rk];
+    const dimNames=(rd.dims||[]).map(d=>d.name);
     html+='<div class="block"><h2>'+rd.round_name+'</h2><div class="meta">有效专家 '+rd.judge_count+' 人 · 案例 '+rd.case_count+' 个</div>';
+
+    // ① 提交记录（评委名单+时间）
+    html+='<div class="sub-title">① 提交记录（同名重复提交仅保留最新）</div>';
+    const subs=rd.submissions||[];
+    if(subs.length===0){ html+='<div class="empty">暂无评委提交</div>'; }
+    else{
+      html+='<table><tr><th>评委</th><th>提交时间</th><th class="num">已打案例数</th></tr>';
+      subs.forEach(s=>{ html+='<tr><td>'+s.judge+'</td><td>'+s.ts+'</td><td class="num">'+(s.scores||[]).length+'</td></tr>'; });
+      html+='</table>';
+    }
+
+    // ② 评委打分明细（按评委折叠）
+    if(subs.length>0){
+      html+='<div class="sub-title">② 评委打分明细（点击展开）</div>';
+      subs.forEach(s=>{
+        const byCase={}; (s.scores||[]).forEach(sc=>{ byCase[sc.case]=sc; });
+        html+='<details class="judge-box"><summary>评委「'+s.judge+'」· '+s.ts+'</summary><div class="inner">';
+        html+='<table><tr><th>案例</th>'+dimNames.map(n=>'<th class="num">'+n+'</th>').join('')+'<th class="num">总分</th></tr>';
+        rd.cases.forEach((cn,idx)=>{
+          const sc=byCase[idx];
+          if(sc){
+            const dv=(sc.dims||[]).map(v=>'<td class="num">'+(v===null||v===undefined?'—':v)+'</td>').join('');
+            html+='<tr><td>'+cn+'</td>'+dv+'<td class="num" style="font-weight:700">'+sc.total+'</td></tr>';
+          }
+        });
+        html+='</table></div></details>';
+      });
+    }
+
+    // ③ 最终统计结果
+    html+='<div class="sub-title">③ 最终统计结果（去最高最低取平均·排序）</div>';
     if(rd.results.length===0){ html+='<div class="empty">暂无数据</div>'; }
     else{
       html+='<table><tr><th>排名</th><th>案例名称</th><th class="num">有效专家数</th><th class="num">最高分</th><th class="num">最低分</th><th class="num">去极值平均分</th></tr>';
-      rd.results.forEach(it=>{ html+='<tr><td class="num">'+it.rank+'</td><td>'+it.case+'</td><td class="num">'+it.count+'</td><td class="num">'+it.max+'</td><td class="num">'+it.min+'</td><td class="num">'+it.score+'</td></tr>'; });
+      rd.results.forEach(it=>{ html+='<tr><td class="num">'+it.rank+'</td><td>'+it.case+'</td><td class="num">'+it.count+'</td><td class="num">'+it.max+'</td><td class="num">'+it.min+'</td><td class="num"><b>'+it.score+'</b></td></tr>'; });
       html+='</table>';
     }
-    html+='<div style="margin-top:10px"><a href="'+SCORING.BACKEND_URL+'/api/export/'+rk+'.csv?pwd='+encodeURIComponent(pwd)+'">导出'+rd.round_name+'成绩CSV</a></div>';
+    html+='<div style="margin-top:10px"><a href="'+SCORING.BACKEND_URL+'/api/export/'+rk+'.csv?pwd='+encodeURIComponent(pwd)+'">导出'+rd.round_name+'统计CSV</a> &nbsp;|&nbsp; <a href="'+SCORING.BACKEND_URL+'/api/export_detail/'+rk+'.csv?pwd='+encodeURIComponent(pwd)+'">导出'+rd.round_name+'打分明细CSV</a></div>';
     html+='</div>';
   }
   html+='<div class="block"><h2>评审打分二维码</h2><div class="qr-row">';
