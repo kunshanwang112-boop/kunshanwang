@@ -13,6 +13,13 @@ header p{font-size:13px;opacity:.92;margin-top:4px}
 .form-meta .field{flex:1;min-width:150px}
 .form-meta label{font-size:13px;color:#6b7788;display:block;margin-bottom:4px}
 .form-meta input{width:100%;border:1px solid #dbe4ea;border-radius:6px;padding:9px 10px;font-size:15px}
+details.guide{background:#fffdf7;border:1px solid #e8d9a8;border-radius:10px;padding:12px 16px;margin-bottom:16px}
+details.guide summary{cursor:pointer;font-size:15px;font-weight:700;color:#8a6d1a}
+.gtab{width:100%;border-collapse:collapse;margin-top:10px;font-size:12px}
+.gtab th,.gtab td{border:1px solid #e8d9a8;padding:6px 8px;text-align:center}
+.gtab th{background:#faf3e3;color:#6b5a1e}
+.gtab td:first-child{text-align:left;font-weight:600}
+.gnote{font-size:12px;color:#8a6d1a;margin-top:8px;line-height:1.6}
 .case{background:#fff;border:1px solid #e3e8f0;border-radius:10px;padding:14px 16px;margin-bottom:12px}
 .case .case-title{font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
 .no{background:#f2f4f7;border-radius:5px;padding:2px 8px;font-size:12px;color:#6b7788}
@@ -71,7 +78,19 @@ input.over{border:2px solid #c00000 !important;background:#fff6f6}
 </head>
 <body>
 <div class="wrap">
-  <header><h1>复审打分</h1><p>每个案例必须填写总分（0–100必填）；若5个维度分全部填写，总分将自动计算并锁定。共10个案例。</p></header>
+  <header><h1>复审打分</h1><p>每个案例填写各维度分，总分自动计算并锁定；也可只填总分直接提交。共10个案例。</p></header>
+  <details class="guide" open>
+    <summary>评分说明（请先阅读）</summary>
+    <table class="gtab">
+      <tr><th>维度（满分）</th><th>优秀</th><th>良好</th><th>一般</th><th>较差</th></tr>
+      <tr><td>立足实际场景（20分）</td><td>17—20</td><td>13—16</td><td>9—12</td><td>0—8</td></tr>
+      <tr><td>体现赋能价值（20分）</td><td>17—20</td><td>13—16</td><td>9—12</td><td>0—8</td></tr>
+      <tr><td>成效真实可验证（20分）</td><td>17—20</td><td>13—16</td><td>9—12</td><td>0—8</td></tr>
+      <tr><td>坚持原创合规（10分）</td><td>9—10</td><td>7—8</td><td>5—6</td><td>0—4</td></tr>
+      <tr><td>具备推广价值（30分）</td><td>26—30</td><td>19—25</td><td>12—18</td><td>0—11</td></tr>
+    </table>
+    <p class="gnote">各维度得分建议按"优秀、良好、一般、较差"四档控制；总计为各维度得分之和，满分100分。</p>
+  </details>
   <div class="form-meta">
     <div class="field"><label>评委姓名（必填·实名）</label><input id="judge" autocomplete="name" placeholder="请输入姓名"></div>
   </div>
