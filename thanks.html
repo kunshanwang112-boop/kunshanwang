@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>提交成功</title>
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#f4f6fb;display:flex;align-items:center;justify-content:center;min-height:100vh}
+.box{background:#fff;border:1px solid #e3e8f0;border-radius:12px;padding:44px 28px;width:92%;max-width:420px;text-align:center}
+.box h1{font-size:22px;color:#2e9e5b;margin-bottom:12px}
+.box p{font-size:14px;color:#6b7788;margin-bottom:6px}
+.btn{display:inline-block;background:#c00000;color:#fff;border:0;border-radius:6px;padding:11px 28px;font-size:15px;text-decoration:none;margin-top:20px}
+.note{font-size:12px;color:#9aa5b1;margin-top:14px}
+</style></head>
+<body><div class="box">
+<h1>打分提交成功</h1>
+<p id="greet" style="font-size:16px;color:#1f2d3d;font-weight:600">感谢您的参与！</p>
+<p>您的评分已成功记录，请勿重复提交。</p>
+<p>如需修改，可重新进入打分页再次提交，同名将覆盖原成绩。</p>
+<a class="btn" href="index.html">返回首页</a>
+<div class="note">终端公司 TeleAgent 竞赛评审</div>
+</div>
+<script>
+const q=new URLSearchParams(location.search);
+const j=q.get('j');
+if(j) document.getElementById('greet').textContent='感谢您，'+j+'！';
+</script>
+</body></html>
