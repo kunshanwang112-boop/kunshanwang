@@ -249,9 +249,7 @@ async function submit(){
     return;
   }
   if(miss.length){
-    askConfirm('还有 '+miss.length+' 个案例未填总分。
-确认仅提交已填写的 '+scores.length+' 个案例吗？
-（也可返回补填后再提交；后续补填可再次提交，同名覆盖）',()=>doSubmit(judge,scores));
+    askConfirm('还有 '+miss.length+' 个案例未填总分。\n确认仅提交已填写的 '+scores.length+' 个案例吗？\n（也可返回补填后再提交；后续补填可再次提交，同名覆盖）',()=>doSubmit(judge,scores));
     return;
   }
   doSubmit(judge,scores);
