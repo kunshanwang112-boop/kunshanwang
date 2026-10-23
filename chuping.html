@@ -50,6 +50,16 @@ td.num,th.num{text-align:center}
 .block h2{font-size:17px;margin-bottom:4px}
 .block .meta{font-size:12px;color:#6b7788;margin-bottom:12px}
 .qr-img{width:170px;height:170px;border:1px solid #e3e8f0;border-radius:8px}
+.pager{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:14px 0 0;background:#fff;border:1px solid #e3e8f0;border-radius:10px;padding:10px}
+.pager .pginfo{font-size:13px;color:#6b7788;align-self:center;margin-right:6px}
+.pgbtn{border:1px solid #d4dbe6;background:#fff;border-radius:6px;padding:8px 12px;font-size:14px;cursor:pointer}
+.pgbtn.on{background:#c00000;color:#fff;border-color:#c00000}
+.pgbtn:disabled{opacity:.4;cursor:not-allowed}
+.pgbtn span{font-size:11px;opacity:.8}
+input.over{border:2px solid #c00000 !important;background:#fff6f6}
+.tabs{display:flex;gap:10px;margin-bottom:14px}
+.tab{border:1px solid #c00000;background:#fff;color:#c00000;border-radius:8px;padding:10px 24px;font-size:15px;cursor:pointer}
+.tab.on{background:#c00000;color:#fff}
 </style>
 </head>
 <body>
@@ -59,8 +69,9 @@ td.num,th.num{text-align:center}
     <div class="field"><label>评委姓名（必填·实名）</label><input id="judge" autocomplete="name" placeholder="请输入姓名"></div>
   </div>
   <div id="caseList"></div>
+  <div class="pager" id="pager"></div>
   <div class="bar">
-    <span class="count">已填总分：<span id="filled">0</span>/10</span>
+    <span class="count">已填总分：<span id="filled">0</span>/10（全部答完才能提交）</span>
     <span id="msg"></span><button class="submit-btn" onclick="submit()">提交打分</button>
   </div>
 </div>
@@ -74,53 +85,123 @@ const DIMS=[{"name": "立足实际场景", "max": 20}, {"name": "体现赋能价
   CASES.forEach((c,idx)=>{
     const card=document.createElement('div'); card.className='case'; card.dataset.i=idx;
     let h='<div class="case-title"><span class="no">'+(idx+1)+'</span><b>'+c+'</b></div><div class="dims">';
-    DIMS.forEach(d=>{ h+='<div class="dim"><label>'+d.name+'（≤'+d.max+'分）</label><input type="number" min="0" max="'+d.max+'" data-dim="'+d.name+'" placeholder="选填"></div>'; });
-    h+='</div><div class="total"><label>总分<span class="star">*</span></label><input type="number" min="0" max="100" placeholder="0-100" class="total-input"><span class="hint">必填</span></div>';
+    DIMS.forEach(d=>{ h+='<div class="dim"><label>'+d.name+'（≤'+d.max+'分）</label><input type="number" step="0.01" min="0" max="'+d.max+'" data-max="'+d.max+'" data-dim="'+d.name+'" placeholder="选填"></div>'; });
+    h+='</div><div class="total"><label>总分<span class="star">*</span></label><input type="number" step="0.01" min="0" max="100" placeholder="0-100" class="total-input"><span class="hint">必填·≤100</span></div>';
     card.innerHTML=h;
     card.querySelectorAll('.dim input').forEach(di=>di.addEventListener('input',()=>recalc(card)));
     const ti=card.querySelector('.total-input');
-    ti.addEventListener('input',()=>{card.classList.remove('err'); refreshFilled();});
+    ti.addEventListener('input',()=>{card.classList.remove('err'); liveCheck(card); refreshFilled();});
     wrap.appendChild(card);
   });
+  renderPager(); showPage(0); refreshFilled();
 })();
+const PAGE_SIZE=10;
+let curPage=0;
+const totalPages=Math.max(1,Math.ceil(CASES.length/PAGE_SIZE));
+function showPage(p){
+  if(p<0) p=0; if(p>totalPages-1) p=totalPages-1;
+  curPage=p;
+  document.querySelectorAll('.case').forEach(card=>{
+    const i=+card.dataset.i;
+    card.style.display=(Math.floor(i/PAGE_SIZE)===p)?'':'none';
+  });
+  document.querySelectorAll('.pgbtn').forEach(b=>b.classList.remove('on'));
+  const b=document.getElementById('pg'+p); if(b) b.classList.add('on');
+  window.scrollTo(0,0);
+  refreshFilled();
+}
+function renderPager(){
+  const bar=document.getElementById('pager');
+  let h='<span class="pginfo">每页'+PAGE_SIZE+'个，共'+totalPages+'页：</span>';
+  h+='<button class="pgbtn" onclick="showPage(curPage-1)">上一页</button>';
+  for(let p=0;p<totalPages;p++){
+    h+='<button class="pgbtn" id="pg'+p+'" onclick="showPage('+p+')">第'+(p+1)+'页<span id="pgdone'+p+'"></span></button>';
+  }
+  h+='<button class="pgbtn" onclick="showPage(curPage+1)">下一页</button>';
+  bar.innerHTML=h;
+}
+function pageDone(p){
+  let n=0;
+  document.querySelectorAll('.case').forEach(card=>{
+    const i=+card.dataset.i;
+    if(Math.floor(i/PAGE_SIZE)===p && card.querySelector('.total-input').value!=='') n++;
+  });
+  return n;
+}
+function refreshFilled(){
+  let n=0; document.querySelectorAll('.total-input').forEach(i=>{ if(i.value!=='') n++; });
+  document.getElementById('filled').textContent=n;
+  for(let p=0;p<totalPages;p++){
+    const el=document.getElementById('pgdone'+p);
+    if(el) el.textContent=' '+pageDone(p)+'/'+PAGE_SIZE;
+  }
+}
+function badInput(inp){
+  if(inp.value==='') return false;
+  const v=parseFloat(inp.value);
+  if(isNaN(v)) return true;
+  if(!/^\d+(\.\d{1,2})?$/.test(inp.value)) return true;
+  if(inp.classList.contains('total-input')){ if(v<0||v>100) return true; }
+  else { if(v<0||v>+inp.dataset.max) return true; }
+  return false;
+}
+function liveCheck(card){
+  let bad=false;
+  card.querySelectorAll('input').forEach(i=>{
+    if(badInput(i)){ i.classList.add('over'); bad=true; } else i.classList.remove('over');
+  });
+  if(bad) flash('分值不合法：须为数字、不超上限、最多两位小数','err');
+  const ti=card.querySelector('.total-input');
+  if(ti.value!=='' && +ti.value>100) flash('总分不能超过100','err');
+}
 function recalc(card){
   const dis=card.querySelectorAll('.dim input');
   const t=card.querySelector('.total-input');
   let full=true, sum=0;
   dis.forEach(i=>{ if(i.value===''){full=false;} else {sum+=+i.value;} });
-  if(full){ t.value=sum; t.readOnly=true; t.classList.add('auto'); }
+  if(full){ t.value=Math.round(sum*100)/100; t.readOnly=true; t.classList.add('auto'); }
   else { t.readOnly=false; t.classList.remove('auto'); }
   card.classList.remove('err');
-}
-function refreshFilled(){
-  let n=0; document.querySelectorAll('.total-input').forEach(i=>{ if(i.value!=='') n++; });
-  document.getElementById('filled').textContent=n;
+  liveCheck(card);
+  refreshFilled();
 }
 async function submit(){
   const judge=document.getElementById('judge').value.trim();
   if(!judge){ flash('请填写评委姓名','err'); return; }
-  // 必填校验：所有案例总分不能为空
   const miss=[];
   document.querySelectorAll('.case').forEach(card=>{
-    if(card.querySelector('.total-input').value===''){ miss.push(card); card.classList.add('err'); } });
+    if(card.querySelector('.total-input').value===''){ miss.push(card); card.classList.add('err'); }
+  });
   if(miss.length){
-    flash('还有 '+miss.length+' 个案例未填总分，已标红，请补齐','err');
-    miss[0].scrollIntoView({behavior:'smooth',block:'center'});
+    const p=Math.floor(+miss[0].dataset.i/PAGE_SIZE);
+    showPage(p);
+    flash('还有 '+miss.length+' 个案例未填总分（已跳至第'+(p+1)+'页），全部答完才能提交','err');
+    return;
+  }
+  const bads=[];
+  document.querySelectorAll('.case').forEach(card=>{
+    card.querySelectorAll('input').forEach(i=>{ if(badInput(i)){ i.classList.add('over'); bads.push(i); } });
+  });
+  if(bads.length){
+    const p=Math.floor(+bads[0].closest('.case').dataset.i/PAGE_SIZE);
+    showPage(p);
+    flash('有 '+bads.length+' 处分值不合法（超上限或超过两位小数），已标红','err');
     return;
   }
   const scores=[];
   document.querySelectorAll('.case').forEach(card=>{
     const idx=+card.dataset.i; const dims={};
     card.querySelectorAll('.dim input').forEach(inp=>{ if(inp.value!=='') dims[inp.dataset.dim]=+inp.value; });
-    const t=card.querySelector('.total-input').value.trim();
-    scores.push({case:idx,dims,total:+t});
+    scores.push({case:idx,dims,total:+card.querySelector('.total-input').value});
   });
   const body={round:ROUND,judge,scores};
   const btn=document.querySelector('.submit-btn'); btn.disabled=true;
   try{
     const r=await fetch(SCORING.BACKEND_URL+'/api/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    const j=await r.json(); flash(j.msg,j.ok?'ok':'err');
-  }catch(e){ flash('提交失败，请检查后端地址是否已配置','err'); }
+    const j=await r.json();
+    if(j.ok){ location.replace('thanks.html?j='+encodeURIComponent(judge)); return; }
+    flash(j.msg,'err');
+  }catch(e){ flash('提交失败，请检查网络','err'); }
   btn.disabled=false;
 }
 function flash(msg,type){
