@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>成绩统计</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#f4f6fb;color:#1f2d3d}
+.wrap{max-width:760px;margin:0 auto;padding:20px 14px 80px}
+header{background:#c00000;color:#fff;border-radius:10px;padding:16px 18px;margin-bottom:16px}
+header h1{font-size:20px}
+header p{font-size:13px;opacity:.92;margin-top:4px}
+.form-meta{display:flex;flex-wrap:wrap;gap:12px;background:#fff;border:1px solid #e3e8f0;border-radius:10px;padding:14px 16px;margin-bottom:16px}
+.form-meta .field{flex:1;min-width:150px}
+.form-meta label{font-size:13px;color:#6b7788;display:block;margin-bottom:4px}
+.form-meta input{width:100%;border:1px solid #dbe4ea;border-radius:6px;padding:9px 10px;font-size:15px}
+.case{background:#fff;border:1px solid #e3e8f0;border-radius:10px;padding:14px 16px;margin-bottom:12px}
+.case .case-title{font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.no{background:#f2f4f7;border-radius:5px;padding:2px 8px;font-size:12px;color:#6b7788}
+.dims{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:12px}
+.dim label{display:block;font-size:12px;color:#6b7788;margin-bottom:3px}
+.dim input{width:100%;border:1px solid #dbe4ea;border-radius:6px;padding:8px;font-size:15px}
+.total{display:flex;align-items:center;gap:10px;border-top:1px dashed #e3e8f0;padding-top:10px}
+.total label{font-size:14px;font-weight:700}
+.total .star{color:#c00000}
+.total input{width:90px;border:2px solid #c00000;border-radius:6px;padding:8px;font-size:16px;font-weight:700;text-align:center}
+.total .hint{font-size:12px;color:#6b7788}
+.bar{position:sticky;bottom:0;background:#fff;border:1px solid #e3e8f0;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:14px;margin-top:18px;box-shadow:0 -4px 12px rgba(0,0,0,.05)}
+.bar .count{font-size:13px;color:#4b5563;flex:1}
+.bar #msg{font-size:13px;max-width:40%}
+#msg.ok{color:#2e9e5b}
+#msg.err{color:#c00000}
+.submit-btn{background:#c00000;color:#fff;border:0;border-radius:8px;padding:12px 30px;font-size:16px;cursor:pointer}
+.submit-btn:disabled{opacity:.6}
+.btn{display:inline-block;background:#c00000;color:#fff;border:0;border-radius:6px;padding:10px 18px;font-size:15px;text-decoration:none;margin-right:10px}
+.card{background:#fff;border:1px solid #e3e8f0;border-radius:10px;padding:22px;margin-bottom:16px}
+.card h2{font-size:17px;margin-bottom:6px}
+.card p{color:#6b7785;font-size:13px;margin-bottom:14px}
+.btn.gray{background:#5a6a7a}
+.btn.plain{background:#fff;color:#c00000;border:1px solid #c00000}
+.note{font-size:12px;color:#9aa5b1;margin-top:10px;text-align:center}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{border:1px solid #e3e8f0;padding:8px 10px;text-align:left}
+th{background:#f7f8fb;font-weight:600}
+td.num,th.num{text-align:center}
+.empty{color:#9aa5b1;text-align:center;padding:20px;font-size:13px}
+.block{background:#fff;border:1px solid #e3e8f0;border-radius:10px;padding:18px;margin-bottom:24px}
+.block h2{font-size:17px;margin-bottom:4px}
+.block .meta{font-size:12px;color:#6b7788;margin-bottom:12px}
+.qr-img{width:170px;height:170px;border:1px solid #e3e8f0;border-radius:8px}
+
+.toolbar{margin:0 auto 16px}
+.refresh{background:#fff;border:1px solid #c00000;color:#c00000;border-radius:6px;padding:8px 14px;cursor:pointer}
+.pwd{display:flex;gap:10px;margin-bottom:16px}
+.pwd input{flex:1;border:1px solid #dbe4ea;border-radius:6px;padding:10px;font-size:15px}
+.qr-row{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start}
+</style></head>
+<body><div class="wrap">
+<h1>成绩统计（去最高最低分取平均）</h1>
+<div class="toolbar"><button class="refresh" onclick="location.reload()">刷新</button> <a href="index.html">← 返回首页</a></div>
+<div class="pwd"><input type="password" id="pwd" placeholder="管理口令"><button class="refresh" onclick="load(true)">加载结果</button></div>
+<div id="blocks"></div>
+<div class="note">计分口径：每案例取全部评委总分，去掉一个最高分和一个最低分后取平均（评委≤2直接平均）；同名评委重复提交覆盖。</div>
+</div>
+<script src="config.js"></script>
+<script>
+function e(id){return document.getElementById(id);}
+async function load(){
+  const pwd=(e('pwd').value||'').trim();
+  if(!pwd){ e('blocks').innerHTML='<div class="empty">请先输入管理口令</div>'; return; }
+  try{
+    const r=await fetch(SCORING.BACKEND_URL+'/api/results?pwd='+encodeURIComponent(pwd));
+    if(r.status===401){ e('blocks').innerHTML='<div class="empty" style="color:#c00000">口令错误</div>'; return; }
+    const data=await r.json(); render(data,pwd);
+  }catch(err){ e('blocks').innerHTML='<div class="empty">加载失败，请检查后端地址</div>'; }
+}
+function render(data,pwd){
+  const box=e('blocks'); let html='';
+  for(const rk in data){
+    const rd=data[rk];
+    html+='<div class="block"><h2>'+rd.round_name+'</h2><div class="meta">有效专家 '+rd.judge_count+' 人 · 案例 '+rd.case_count+' 个</div>';
+    if(rd.results.length===0){ html+='<div class="empty">暂无数据</div>'; }
+    else{
+      html+='<table><tr><th>排名</th><th>案例名称</th><th class="num">有效专家数</th><th class="num">最高分</th><th class="num">最低分</th><th class="num">去极值平均分</th></tr>';
+      rd.results.forEach(it=>{ html+='<tr><td class="num">'+it.rank+'</td><td>'+it.case+'</td><td class="num">'+it.count+'</td><td class="num">'+it.max+'</td><td class="num">'+it.min+'</td><td class="num">'+it.score+'</td></tr>'; });
+      html+='</table>';
+    }
+    html+='<div style="margin-top:10px"><a href="'+SCORING.BACKEND_URL+'/api/export/'+rk+'.csv?pwd='+encodeURIComponent(pwd)+'">导出'+rd.round_name+'成绩CSV</a></div>';
+    html+='</div>';
+  }
+  html+='<div class="block"><h2>评审打分二维码</h2><div class="qr-row">';
+  for(const rk in data){
+    const rd=data[rk];
+    html+='<div><img class="qr-img" src="'+SCORING.BACKEND_URL+'/qr/'+rk+'" alt="'+rd.round_name+'"><div style="font-size:12px;color:#6b7788;margin-top:4px">'+rd.round_name+' · 扫码打分</div></div>';
+  }
+  html+='</div></div>';
+  box.innerHTML=html;
+}
+</script></body></html>

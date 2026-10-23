@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>终端公司TeleAgent竞赛 · 线上打分</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#f4f6fb;color:#1f2d3d;min-height:100vh}
+  .wrap{max-width:720px;margin:0 auto;padding:40px 20px}
+  h1{font-size:22px;text-align:center;margin-bottom:6px;color:#c00000}
+  .sub{text-align:center;color:#6b7785;font-size:13px;margin-bottom:30px}
+  .card{background:#fff;border:1px solid #e3e8f0;border-radius:10px;padding:22px;margin-bottom:16px}
+  .card h2{font-size:17px;margin-bottom:6px}
+  .card p{color:#6b7785;font-size:13px;margin-bottom:14px}
+  .btn{display:inline-block;background:#c00000;color:#fff;border:0;border-radius:6px;padding:10px 18px;font-size:15px;text-decoration:none;margin-right:10px}
+  .btn.gray{background:#667;background:#5a6a7a}
+  .btn.plain{background:#fff;color:#c00000;border:1px solid #c00000}
+  .note{font-size:12px;color:#9aa5b1;margin-top:10px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>终端公司 TeleAgent 竞赛 · 线上打分</h1>
+  <div class="sub">评委扫码进入对应轮次打分；管理入口供评审工作组统计结果</div>
+
+  {% for rk in round_keys %}
+  <div class="card">
+    <h2>{{ rounds[rk]['name'] }}打分</h2>
+    <p>共 {{ rounds[rk]['cases']|length }} 个案例 · 每案例填总分（0—100），5个维度分选填</p>
+    <a class="btn" href="/score/{{ rk }}">进入{{ rounds[rk]['name'] }}打分</a>
+    <a class="btn plain" href="/qr/{{ rk }}" target="_blank">查看{{ rounds[rk]['name'] }}二维码</a>
+  </div>
+  {% endfor %}
+
+  <div class="card">
+    <h2>成绩统计</h2>
+    <p>去最高最低分取平均、排序、导出（仅工作组使用，需密码）</p>
+    <a class="btn gray" href="/admin">进入管理端</a>
+  </div>
+
+  <div class="note">仅供本次评审使用 · 数据保存在服务端本地</div>
+</div>
+</body>
+</html>

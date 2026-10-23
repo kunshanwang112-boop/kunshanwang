@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>管理端登录</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#f4f6fb;display:flex;align-items:center;justify-content:center;min-height:100vh}
+  .box{background:#fff;border:1px solid #e3e8f0;border-radius:10px;padding:30px;width:320px}
+  h1{font-size:18px;color:#c00000;margin-bottom:18px;text-align:center}
+  label{font-size:13px;color:#6b7788;display:block;margin-bottom:4px}
+  input{width:100%;border:1px solid #dbe4ea;border-radius:6px;padding:10px;font-size:15px;margin-bottom:12px}
+  button{width:100%;background:#c00000;color:#fff;border:0;border-radius:6px;padding:11px;font-size:15px;cursor:pointer}
+  .err{color:#c00000;font-size:13px;text-align:center;margin-bottom:8px}
+</style>
+</head>
+<body>
+<div class="box">
+  <h1>管理端</h1>
+  {% if error %}<div class="err">{{ error }}</div>{% endif %}
+  <form method="post" action="/admin/login">
+    <label>管理密码</label>
+    <input type="password" name="password" required autofocus>
+    <button type="submit">进入</button>
+  </form>
+</div>
+</body>
+</html>

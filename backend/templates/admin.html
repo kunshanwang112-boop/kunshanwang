@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>成绩统计</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#f4f6fb;color:#1f2d3d;padding:20px}
+  .toolbar{max-width:920px;margin:0 auto 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .toolbar a{color:#c00000;font-size:14px;text-decoration:none;margin-right:6px}
+  .refresh{background:#fff;border:1px solid #c00000;color:#c00000;border-radius:6px;padding:8px 14px;cursor:pointer}
+  .block{max-width:920px;margin:0 auto 24px;background:#fff;border:1px solid #e3e8f0;border-radius:10px;padding:18px}
+  .block h2{font-size:17px;margin-bottom:4px}
+  .block .meta{font-size:12px;color:#6b7788;margin-bottom:12px}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{border:1px solid #e3e8f0;padding:8px 10px;text-align:left}
+  th{background:#f7f8fb;font-weight:600}
+  td.num,th.num{text-align:center}
+  tr:nth-child(1) td{font-weight:700}
+  .rank1{color:#c00000;font-weight:700}
+  .empty{color:#9aa5b1;text-align:center;padding:20px;font-size:13px}
+  .tips{max-width:920px;margin:0 auto;font-size:12px;color:#9aa5b1;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>成绩统计（去最高最低分取平均）</h1>
+  <div style="margin-top:10px">
+    <button class="refresh" onclick="location.reload()">刷新</button>
+    <a href="/">← 返回首页</a>
+  </div>
+</div>
+
+<div id="content"></div>
+<div class="tips">
+  计分口径：每个案例取全部评委的总分，去掉一个最高分和一个最低分后取算术平均（保留2位小数）；评委数≤2时直接取平均。<br>
+  有效专家数＝已为该案例填写总分的评委数；评委可重复提交，同名覆盖上次结果。
+</div>
+
+<script>
+  async function load(){
+    const r=await fetch('/api/results');
+    const data=await r.json();
+    const box=document.getElementById('block');
+    box.innerHTML='';
+    for(const rk of Object.keys(data)){
+      const rd=data[rk];
+      const block=document.createElement('div'); block.className='block';
+      let html='<h2>'+rd.round_name+'</h2><div class="meta">有效专家 '+rd.judge_count+' 人 · 案例 '+rd.case_count+' 个</div>';
+      if(rd.results.length===0){
+        html+='<div class="empty">暂无数据</div>';
+      }else{
+        html+='<table><tr><th>排名</th><th>案例名称</th><th class="num">有效专家数</th><th class="num">最高分</th><th class="num">最低分</th><th class="num">去极值平均分</th></tr>';
+        rd.results.forEach(it=>{
+          html+='<tr><td class="num rank">'+it.rank+'</td><td>'+it.case+'</td><td class="num">'+it.count+'</td><td class="num">'+it.max+'</td><td class="num">'+it.min+'</td><td class="num">'+it.score+'</td></tr>';
+        });
+        html+='</table>';
+      }
+      html+='<div style="margin-top:12px"><a href="/api/export/'+encodeURIComponent(rk)+'.csv">导出'+rd.round_name+'成绩CSV</a></div>';
+      block.innerHTML=html;
+      box.appendChild(block);
+    }
+  }
+  load();
+</script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>终端公司TeleAgent竞赛·线上打分</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#f4f6fb;color:#1f2d3d}
+.wrap{max-width:760px;margin:0 auto;padding:20px 14px 80px}
+header{background:#c00000;color:#fff;border-radius:10px;padding:16px 18px;margin-bottom:16px}
+header h1{font-size:20px}
+header p{font-size:13px;opacity:.92;margin-top:4px}
+.form-meta{display:flex;flex-wrap:wrap;gap:12px;background:#fff;border:1px solid #e3e8f0;border-radius:10px;padding:14px 16px;margin-bottom:16px}
+.form-meta .field{flex:1;min-width:150px}
+.form-meta label{font-size:13px;color:#6b7788;display:block;margin-bottom:4px}
+.form-meta input{width:100%;border:1px solid #dbe4ea;border-radius:6px;padding:9px 10px;font-size:15px}
+.case{background:#fff;border:1px solid #e3e8f0;border-radius:10px;padding:14px 16px;margin-bottom:12px}
+.case .case-title{font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.no{background:#f2f4f7;border-radius:5px;padding:2px 8px;font-size:12px;color:#6b7788}
+.dims{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:12px}
+.dim label{display:block;font-size:12px;color:#6b7788;margin-bottom:3px}
+.dim input{width:100%;border:1px solid #dbe4ea;border-radius:6px;padding:8px;font-size:15px}
+.total{display:flex;align-items:center;gap:10px;border-top:1px dashed #e3e8f0;padding-top:10px}
+.total label{font-size:14px;font-weight:700}
+.total .star{color:#c00000}
+.total input{width:90px;border:2px solid #c00000;border-radius:6px;padding:8px;font-size:16px;font-weight:700;text-align:center}
+.total .hint{font-size:12px;color:#6b7788}
+.bar{position:sticky;bottom:0;background:#fff;border:1px solid #e3e8f0;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:14px;margin-top:18px;box-shadow:0 -4px 12px rgba(0,0,0,.05)}
+.bar .count{font-size:13px;color:#4b5563;flex:1}
+.bar #msg{font-size:13px;max-width:40%}
+#msg.ok{color:#2e9e5b}
+#msg.err{color:#c00000}
+.submit-btn{background:#c00000;color:#fff;border:0;border-radius:8px;padding:12px 30px;font-size:16px;cursor:pointer}
+.submit-btn:disabled{opacity:.6}
+.btn{display:inline-block;background:#c00000;color:#fff;border:0;border-radius:6px;padding:10px 18px;font-size:15px;text-decoration:none;margin-right:10px}
+.card{background:#fff;border:1px solid #e3e8f0;border-radius:10px;padding:22px;margin-bottom:16px}
+.card h2{font-size:17px;margin-bottom:6px}
+.card p{color:#6b7785;font-size:13px;margin-bottom:14px}
+.btn.gray{background:#5a6a7a}
+.btn.plain{background:#fff;color:#c00000;border:1px solid #c00000}
+.note{font-size:12px;color:#9aa5b1;margin-top:10px;text-align:center}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{border:1px solid #e3e8f0;padding:8px 10px;text-align:left}
+th{background:#f7f8fb;font-weight:600}
+td.num,th.num{text-align:center}
+.empty{color:#9aa5b1;text-align:center;padding:20px;font-size:13px}
+.block{background:#fff;border:1px solid #e3e8f0;border-radius:10px;padding:18px;margin-bottom:24px}
+.block h2{font-size:17px;margin-bottom:4px}
+.block .meta{font-size:12px;color:#6b7788;margin-bottom:12px}
+.qr-img{width:170px;height:170px;border:1px solid #e3e8f0;border-radius:8px}
+</style></head>
+<body><div class="wrap">
+<h1 style="color:#c00000;text-align:center;margin-bottom:6px">终端公司 TeleAgent 竞赛 · 线上打分</h1>
+<div style="text-align:center;color:#6b7785;font-size:13px;margin-bottom:30px">评委扫码进入对应轮次打分</div>
+<div class="card"><h2>初评打分</h2><p>共60个案例 · 每案例填总分（0–100）</p><a class="btn" href="chuping.html">进入打分</a></div><div class="card"><h2>复审打分</h2><p>共30个案例 · 每案例填总分（0–100）</p><a class="btn" href="fushen.html">进入打分</a></div>
+<div class="card"><h2>成绩统计（工作组）</h2><p>去最高最低分取平均·排序·导出CSV（需管理口令）</p><a class="btn gray" href="admin.html">进入管理页</a></div>
+<div class="note">数据保存在云端后端 · 仅供本次评审使用</div>
+</div></body></html>

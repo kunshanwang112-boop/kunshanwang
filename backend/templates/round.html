@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ round_name }}打分</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#f4f6fb;color:#1f2d3d}
+  .wrap{max-width:760px;margin:0 auto;padding:20px 14px 60px}
+  header{background:#c00000;color:#fff;border-radius:10px;padding:16px 18px;margin-bottom:16px}
+  header h1{font-size:20px}
+  header p{font-size:13px;opacity:.92;margin-top:4px}
+  .form-meta{display:flex;flex-wrap:wrap;gap:12px;background:#fff;border:1px solid #e3e8f0;border-radius:10px;padding:14px 16px;margin-bottom:16px}
+  .form-meta .field{flex:1;min-width:150px}
+  .form-meta label{font-size:13px;color:#6b7788;display:block;margin-bottom:4px}
+  .form-meta input{width:100%;border:1px solid #dbe4ea;border-radius:6px;padding:9px 10px;font-size:15px}
+  .case{background:#fff;border:1px solid #e3e8f0;border-radius:10px;padding:14px 16px;margin-bottom:12px}
+  .case .case-title{font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .no{background:#f2f4f7;border-radius:5px;padding:2px 8px;font-size:12px;color:#6b7788}
+  .dims{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:12px}
+  .dim label{display:block;font-size:12px;color:#6b7788;margin-bottom:3px}
+  .dim input{width:100%;border:1px solid #dbe4ea;border-radius:6px;padding:8px;font-size:15px}
+  .total{display:flex;align-items:center;gap:10px;border-top:1px dashed #e3e8f0;padding-top:10px}
+  .total label{font-size:14px;font-weight:700}
+  .total .star{color:#c00000}
+  .total input{width:90px;border:2px solid #c00000;border-radius:6px;padding:8px;font-size:16px;font-weight:700;text-align:center}
+  .total .hint{font-size:12px;color:#6b7788}
+  .bar{position:sticky;bottom:0;background:#fff;border:1px solid #e3e8f0;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:14px;margin-top:18px;box-shadow:0 -4px 12px rgba(0,0,0,.05)}
+  .bar .count{font-size:13px;color:#4b5563;flex:1}
+  .bar #msg{font-size:13px;max-width:40%}
+  #msg.ok{color:#2e9e5b}
+  #msg.err{color:#c00000}
+  .submit-btn{background:#c00000;color:#fff;border:0;border-radius:8px;padding:12px 30px;font-size:16px;cursor:pointer}
+  .submit-btn:disabled{opacity:.6}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>{{ round_name }}打分</h1>
+    <p>请为每个案例填写总分（0–100，必填）；5个维度分可选填。共 {{ cases|length }} 个案例。</p>
+  </header>
+
+  <div class="form-meta">
+    <div class="field">
+      <label>评委姓名（必填·实名）</label>
+      <input id="judge" autocomplete="name" placeholder="请输入姓名">
+    </div>
+    {% if need_pass %}
+    <div class="field">
+      <label>评分口令</label>
+      <input id="pass" type="password" placeholder="评分口令">
+    </div>
+    {% endif %}
+  </div>
+
+  {% for c in cases %}
+  <div class="case" data-i="{{ loop.index0 }}">
+    <div class="case-title"><span class="no">{{ loop.index }}</span> <b>{{ c }}</b></div>
+    <div class="dims">
+      {% for d in dims %}
+      <div class="dim">
+        <label>{{ d.name }}（≤{{ d['max'] }}分）</label>
+        <input type="number" min="0" max="{{ d['max'] }}" data-dim="{{ d['name'] }}" placeholder="选填">
+      </div>
+      {% endfor %}
+    </div>
+    <div class="total">
+      <label>总分<span class="star">*</span></label>
+      <input type="number" min="0" max="100" placeholder="0-100" class="total-input">
+      <span class="hint">必填</span>
+    </div>
+  </div>
+  {% endfor %}
+
+  <div class="bar">
+    <span class="count">已填总分：<span id="filled">0</span>/{{ cases|length }}</span>
+    <span id="msg"></span>
+    <button class="submit-btn" onclick="submit()">提交打分</button>
+  </div>
+</div>
+
+<script>
+  const ROUND = {{ round_key|tojson }};
+  const NEED_PASS = {{ 'true' if need_pass else 'false' }};
+
+  function refreshFilled(){
+    const inputs = document.querySelectorAll('.total-input');
+    let n=0;
+    inputs.forEach(i=>{ if(i.value!=='') n++; });
+    document.getElementById('filled').textContent = n;
+  }
+  document.querySelectorAll('.total-input').forEach(i=>i.addEventListener('input',refreshFilled));
+
+  async function submit(){
+    const judge = document.getElementById('judge').value.trim();
+    if(!judge){ flash('请填写评委姓名','err'); return; }
+
+    const scores=[];
+    let any=false;
+    document.querySelectorAll('.case').forEach(card=>{
+      const idx = +card.dataset.i;
+      const dims={};
+      card.querySelectorAll('.dim input').forEach(inp=>{ if(inp.value!=='') dims[inp.dataset.dim]=+inp.value; });
+      const t = card.querySelector('.total-input').value.trim();
+      if(t!=='') any=true;
+      scores.push({case:idx, dims, total: t===''?null:+t});
+    });
+
+    if(!any){ flash('请至少填写一个案例的总分','err'); return; }
+
+    const body={round:ROUND, judge, scores};
+    if(NEED_PASS) body.pass = document.getElementById('pass').value;
+
+    const btn=document.querySelector('.submit-btn'); btn.disabled=true;
+    try{
+      const r=await fetch('/api/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      const j=await r.json();
+      flash(j.msg, j.ok?'ok':'err');
+    }catch(e){ flash('提交失败，请重试','err'); }
+    btn.disabled=false;
+  }
+
+  function flash(msg,type){
+    const el=document.getElementById('msg');
+    el.className=type; el.textContent=msg;
+  }
+</script>
+</body>
+</html>
