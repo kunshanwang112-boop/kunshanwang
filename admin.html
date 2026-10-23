@@ -97,7 +97,7 @@ function render(data,pwd){
   const rks=Object.keys(data);
   // 顶部Tab：初评/复审分开展示
   let html='<div class="tabs">';
-  rks.forEach(rk=>{ html+='<button class="tab" id="tab-'+rk+'" onclick="showRound(''+rk+'')">'+data[rk].round_name+'</button>'; });
+  rks.forEach(rk=>{ html+='<button class="tab" id="tab-'+rk+'" onclick="showRound(\''+rk+'\')">'+data[rk].round_name+'</button>'; });
   html+='</div>';
   for(const rk of rks){
     const rd=data[rk];
