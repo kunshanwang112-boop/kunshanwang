@@ -1,2 +1,2 @@
-// 后端公网地址：部署后端后，把这里改成你的后端地址，例如 https://xxx.onrender.com（不要带末尾斜杠）
-const SCORING = { BACKEND_URL: "REPLACE_BACKEND_URL" };
+// 打分系统后端地址（cpolar隧道，由TeleAgent维护更新）
+const SCORING = { BACKEND_URL: "https://691d5c9.r33.cpolar.top" };
