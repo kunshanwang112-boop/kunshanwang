@@ -54,7 +54,6 @@ td.num,th.num{text-align:center}
   <header><h1>初评打分</h1><p>请为每个案例填写总分（0–100，必填）；5个维度分选填。共60个案例。</p></header>
   <div class="form-meta">
     <div class="field"><label>评委姓名（必填·实名）</label><input id="judge" autocomplete="name" placeholder="请输入姓名"></div>
-    <div class="field"><label>评分口令（如设置了再填）</label><input id="pass" type="password" placeholder="评分口令"></div>
   </div>
   <div id="caseList"></div>
   <div class="bar">
@@ -73,7 +72,7 @@ const DIMS=[{"name": "立足实际场景", "max": 20}, {"name": "体现赋能价
     const card=document.createElement('div'); card.className='case'; card.dataset.i=idx;
     let h='<div class="case-title"><span class="no">'+(idx+1)+'</span><b>'+c+'</b></div><div class="dims">';
     DIMS.forEach(d=>{ h+='<div class="dim"><label>'+d.name+'（≤'+d.max+'分）</label><input type="number" min="0" max="'+d.max+'" data-dim="'+d.name+'" placeholder="选填"></div>'; });
-    h+='</div><div class="total"><label>总分<span class="st">*</span></label><input type="number" min="0" max="100" placeholder="0-100" class="total-input"><span class="hint">必填</span></div>';
+    h+='</div><div class="total"><label>总分<span class="star">*</span></label><input type="number" min="0" max="100" placeholder="0-100" class="total-input"><span class="hint">必填</span></div>';
     card.innerHTML=h; wrap.appendChild(card);
   });
   document.querySelectorAll('.total-input').forEach(i=>i.addEventListener('input',refreshFilled));
@@ -95,7 +94,7 @@ async function submit(){
     scores.push({case:idx,dims,total:t===''?null:+t});
   });
   if(!any){ flash('请至少填写一个案例的总分','err'); return; }
-  const body={round:ROUND,judge,scores,pass:document.getElementById('pass').value};
+  const body={round:ROUND,judge,scores};
   const btn=document.querySelector('.submit-btn'); btn.disabled=true;
   try{
     const r=await fetch(SCORING.BACKEND_URL+'/api/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
