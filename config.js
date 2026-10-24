@@ -1,2 +1,2 @@
-// 打分系统后端地址（cpolar隧道，由TeleAgent维护更新）
+// 部署后端后，把这里改成后端公网地址，例如 https://xxx.onrender.com（末尾不要带斜杠）
 const SCORING = { BACKEND_URL: "https://23356e2.r33.cpolar.top" };
