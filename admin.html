@@ -99,7 +99,7 @@ small.dim-head{color:#9aa5b1;font-weight:400}
 <div class="toolbar"><button class="refresh" onclick="location.reload()">刷新</button> <a href="index.html">← 返回首页</a></div>
 <div class="pwd"><input type="password" id="pwd" placeholder="管理口令"><button class="refresh" onclick="load(true)">加载结果</button></div>
 <div id="blocks"></div>
-<div class="note">计分口径：每案例取全部评委总分，去掉一个最高分和一个最低分后取平均（评委≤2直接平均）；同名评委重复提交覆盖；去极值后保留两位小数。</div>
+<div class="note">计分口径：每案例取全部评委总分，去掉一个最高分和一个最低分后取平均（评委≤2直接平均）；同名评委多次提交自动合并（同一案例以最新一次为准）；去极值后保留两位小数。</div>
 </div>
 <script src="config.js"></script>
 <script>
@@ -127,7 +127,7 @@ function render(data,pwd){
     html+='<div class="block roundblk" id="blk-'+rk+'" style="display:none"><h2>'+rd.round_name+'</h2><div class="meta">有效专家 '+rd.judge_count+' 人 · 案例 '+rd.case_count+' 个</div>';
 
     // ① 提交记录（评委名单+时间）
-    html+='<div class="sub-title">① 提交记录（同名重复提交仅保留最新）</div>';
+      html+='<div class="sub-title">① 提交记录（同名多次提交自动合并·同一案例以最新为准）</div>';
     const subs=rd.submissions||[];
     if(subs.length===0){ html+='<div class="empty">暂无评委提交</div>'; }
     else{
