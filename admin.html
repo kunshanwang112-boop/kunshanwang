@@ -12,6 +12,13 @@ header p{font-size:13px;opacity:.92;margin-top:4px}
 .form-meta .field{flex:1;min-width:150px}
 .form-meta label{font-size:13px;color:#6b7788;display:block;margin-bottom:4px}
 .form-meta input{width:100%;border:1px solid #dbe4ea;border-radius:6px;padding:9px 10px;font-size:15px}
+details.guide{background:#fffdf7;border:1px solid #e8d9a8;border-radius:10px;padding:12px 16px;margin-bottom:16px}
+details.guide summary{cursor:pointer;font-size:15px;font-weight:700;color:#8a6d1a}
+.gtab{width:100%;border-collapse:collapse;margin-top:10px;font-size:12px}
+.gtab th,.gtab td{border:1px solid #e8d9a8;padding:6px 8px;text-align:center}
+.gtab th{background:#faf3e3;color:#6b5a1e}
+.gtab td:first-child{text-align:left;font-weight:600}
+.gnote{font-size:12px;color:#8a6d1a;margin-top:8px;line-height:1.6}
 .case{background:#fff;border:1px solid #e3e8f0;border-radius:10px;padding:14px 16px;margin-bottom:12px}
 .case .case-title{font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
 .no{background:#f2f4f7;border-radius:5px;padding:2px 8px;font-size:12px;color:#6b7788}
@@ -31,7 +38,14 @@ header p{font-size:13px;opacity:.92;margin-top:4px}
 .bar #msg{font-size:13px;max-width:40%}
 #msg.ok{color:#2e9e5b}
 #msg.err{color:#c00000}
-.submit-btn{background:#c00000;color:#fff;border:0;border-radius:8px;padding:12px 30px;font-size:16px;cursor:pointer}
+.submit-btn{background:#c00000;color:#fff;border:0;border-radius:8px;padding:12px 26px;font-size:16px;cursor:pointer}
+.save-btn{background:#5a6a7a;color:#fff;border:0;border-radius:8px;padding:12px 20px;font-size:14px;cursor:pointer;margin-right:8px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:99}
+.mbox{background:#fff;border-radius:12px;padding:26px 20px;width:88%;max-width:340px;text-align:center}
+.mbox p{font-size:15px;color:#1f2d3d;margin-bottom:20px;line-height:1.6}
+.mbox button{border:0;border-radius:8px;padding:11px 20px;font-size:14px;cursor:pointer;margin:0 6px;font-weight:600}
+.mbox .cancel{background:#eef1f5;color:#4b5563}
+.mbox .okbtn{background:#c00000;color:#fff}
 .submit-btn:disabled{opacity:.6}
 .btn{display:inline-block;background:#c00000;color:#fff;border:0;border-radius:6px;padding:10px 18px;font-size:15px;text-decoration:none;margin-right:10px}
 .card{background:#fff;border:1px solid #e3e8f0;border-radius:10px;padding:22px;margin-bottom:16px}
@@ -93,6 +107,7 @@ async function load(){
   }catch(err){ e('blocks').innerHTML='<div class="empty">加载失败，请检查后端地址</div>'; }
 }
 function render(data,pwd){
+  document._rd=data;
   const box=e('blocks'); 
   const rks=Object.keys(data);
   // 顶部Tab：初评/复审分开展示
@@ -132,13 +147,21 @@ function render(data,pwd){
       });
     }
 
-    // ③ 最终统计结果
+    // ③ 最终统计结果（总榜/省分榜/总部榜 三视图）
     html+='<div class="sub-title">③ 最终统计结果（去最高最低取平均·排序）</div>';
-    if(rd.results.length===0){ html+='<div class="empty">暂无数据</div>'; }
-    else{
-      html+='<table><tr><th>排名</th><th>案例名称</th><th class="num">有效专家数</th><th class="num">最高分</th><th class="num">最低分</th><th class="num">去极值平均分</th></tr>';
-      rd.results.forEach(it=>{ html+='<tr><td class="num">'+it.rank+'</td><td>'+it.case+'</td><td class="num">'+it.count+'</td><td class="num">'+it.max+'</td><td class="num">'+it.min+'</td><td class="num"><b>'+it.score+'</b></td></tr>'; });
-      html+='</table>';
+    if(!rd.has_meta){
+      if(rd.results.length===0){ html+='<div class="empty">暂无数据</div>'; }
+      else{
+        html+='<table><tr><th>排名</th><th>案例名称</th><th class="num">有效专家数</th><th class="num">最高分</th><th class="num">最低分</th><th class="num">去极值平均分</th></tr>';
+        rd.results.forEach(it=>{ html+='<tr><td class="num">'+it.rank+'</td><td>'+it.case+'</td><td class="num">'+it.count+'</td><td class="num">'+it.max+'</td><td class="num">'+it.min+'</td><td class="num"><b>'+it.score+'</b></td></tr>'; });
+        html+='</table>';
+      }
+    } else {
+      html+='<div class="tabs" style="margin:8px 0">';
+      html+='<button class="tab on" id="rt-'+rk+'-all" onclick="showRank(\''+rk+'\',\'all\')">总榜（'+(rd.results||[]).length+'）</button>';
+      html+='<button class="tab" id="rt-'+rk+'-sf" onclick="showRank(\''+rk+'\',\'sf\')">省分公司榜（'+(rd.results_sf||[]).length+'）</button>';
+      html+='<button class="tab" id="rt-'+rk+'-zb" onclick="showRank(\''+rk+'\',\'zb\')">总部榜（'+(rd.results_zb||[]).length+'）</button>';
+      html+='</div><div id="rktable-'+rk+'"></div>';
     }
     html+='<div style="margin-top:10px"><a href="'+SCORING.BACKEND_URL+'/api/export/'+rk+'.csv?pwd='+encodeURIComponent(pwd)+'">导出'+rd.round_name+'统计CSV</a> &nbsp;|&nbsp; <a href="'+SCORING.BACKEND_URL+'/api/export_detail/'+rk+'.csv?pwd='+encodeURIComponent(pwd)+'">导出'+rd.round_name+'打分明细CSV</a></div>';
     html+='</div>';
@@ -151,6 +174,24 @@ function render(data,pwd){
   html+='</div></div>';
   box.innerHTML=html;
   showRound(rks[0]);
+  for(const rk in data){ if(data[rk].has_meta) drawRank(rk,'all'); }
+}
+const _rankData={};
+function showRank(rk,which){
+  ['all','sf','zb'].forEach(w=>{
+    const b=document.getElementById('rt-'+rk+'-'+w); if(b) b.classList.toggle('on', w===which);
+  });
+  drawRank(rk,which);
+}
+function drawRank(rk,which){
+  const win=document._rd&&document._rd[rk]; if(!win) return;
+  const list=which==='sf'?win.results_sf:(which==='zb'?win.results_zb:win.results);
+  const box=document.getElementById('rktable-'+rk); if(!box) return;
+  if(!list||list.length===0){ box.innerHTML='<div class="empty">暂无数据</div>'; return; }
+  let h='<table><tr><th>排名</th><th>案例名称</th><th>申报单位</th><th>方向</th><th class="num">专家数</th><th class="num">最高分</th><th class="num">最低分</th><th class="num">去极值平均分</th></tr>';
+  list.forEach(it=>{ h+='<tr><td class="num">'+it.rank+'</td><td>'+it.case+'</td><td>'+(it.unit||'')+'</td><td>'+(it.dir||'')+'</td><td class="num">'+it.count+'</td><td class="num">'+it.max+'</td><td class="num">'+it.min+'</td><td class="num"><b>'+it.score+'</b></td></tr>'; });
+  h+='</table>';
+  box.innerHTML=h;
 }
 function showRound(rk){
   document.querySelectorAll('.roundblk').forEach(b=>{ b.style.display='none'; });
