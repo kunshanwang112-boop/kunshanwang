@@ -195,7 +195,9 @@ let _draftT=null;
 function autoDraft(){ clearTimeout(_draftT); _draftT=setTimeout(()=>saveDraft(true),800); }
 function loadDraft(){
   try{
-    const raw=localStorage.getItem('scoring_draft_'+ROUND);
+    let raw=localStorage.getItem('scoring_draft_'+ROUND);
+    let fromSnap=false;
+    if(!raw){ raw=localStorage.getItem('scoring_last_'+ROUND); if(raw) fromSnap=true; }
     if(!raw) return;
     const d=JSON.parse(raw);
     if(d.judge) document.getElementById('judge').value=d.judge;
@@ -211,7 +213,7 @@ function loadDraft(){
       recalc(card);
     });
     refreshFilled();
-    flash('已恢复上次保存的草稿','ok');
+    flash(fromSnap?'已恢复您上次提交的分数，可直接修改后重新提交':'已恢复上次保存的草稿','ok');
   }catch(e){}
 }
 function askConfirm(msg,onOk){
@@ -316,7 +318,7 @@ async function submit(){
     return;
   }
   if(miss.length){
-    askConfirm('还有 '+miss.length+' 个案例未填总分。\n确认仅提交已填写的 '+scores.length+' 个案例吗？\n（也可返回补填后再提交；后续补填可再次提交，同名覆盖）',()=>doSubmit(judge,scores));
+    askConfirm('还有 '+miss.length+' 个案例未填总分。\n确认先提交已填写的 '+scores.length+' 个吗？\n（后续可随时补填再提交；多次提交自动合并，同一案例以最新为准）',()=>doSubmit(judge,scores));
     return;
   }
   doSubmit(judge,scores);
@@ -327,7 +329,7 @@ async function doSubmit(judge,scores){
   try{
     const r=await fetch(SCORING.BACKEND_URL+'/api/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     const j=await r.json();
-    if(j.ok){ try{localStorage.removeItem('scoring_draft_'+ROUND);}catch(e){} location.replace('thanks.html?j='+encodeURIComponent(judge)); return; }
+    if(j.ok){ try{ const snap={judge:judge, scores:{}}; scores.forEach(sc=>{ snap.scores[sc.case]={dims:(sc.dims||{}), total:sc.total}; }); localStorage.setItem('scoring_last_'+ROUND, JSON.stringify(snap)); localStorage.removeItem('scoring_draft_'+ROUND);}catch(e){} location.replace('thanks.html?j='+encodeURIComponent(judge)); return; }
     flash(j.msg,'err');
   }catch(e){ flash('提交失败，请检查网络','err'); }
   btn.disabled=false;
