@@ -104,14 +104,28 @@ small.dim-head{color:#9aa5b1;font-weight:400}
 <script src="config.js"></script>
 <script>
 function e(id){return document.getElementById(id);}
+async function loadLatestBackend(){
+  const urls=['https://cdn.jsdelivr.net/gh/kunshanwang112-boop/kunshanwang@main/config.js?ts='+Date.now(), 'config.js?ts='+Date.now()];
+  for(const u of urls){
+    try{ const r=await fetch(u,{cache:'no-store'}); if(!r.ok) continue; const t=await r.text(); const m=t.match(/BACKEND_URL:\s*"([^"]+)"/); if(m&&m[1]) return m[1]; }catch(e){}
+  }
+  return null;
+}
 async function load(){
   const pwd=(e('pwd').value||'').trim();
   if(!pwd){ e('blocks').innerHTML='<div class="empty">请先输入管理口令</div>'; return; }
-  try{
-    const r=await fetch(SCORING.BACKEND_URL+'/api/results?pwd='+encodeURIComponent(pwd));
-    if(r.status===401){ e('blocks').innerHTML='<div class="empty" style="color:#c00000">口令错误</div>'; return; }
-    const data=await r.json(); render(data,pwd);
-  }catch(err){ e('blocks').innerHTML='<div class="empty">加载失败，请检查后端地址</div>'; }
+  for(let i=0;i<3;i++){
+    try{
+      const r=await fetch(SCORING.BACKEND_URL+'/api/results?pwd='+encodeURIComponent(pwd));
+      if(r.status===401){ e('blocks').innerHTML='<div class="empty" style="color:#c00000">口令错误</div>'; return; }
+      const data=await r.json(); render(data,pwd); return;
+    }catch(err){
+      const nu=await loadLatestBackend();
+      if(nu && nu!==SCORING.BACKEND_URL){ try{ SCORING.BACKEND_URL=nu; }catch(e){} }
+      await new Promise(rs=>setTimeout(rs,2000));
+    }
+  }
+  e('blocks').innerHTML='<div class="empty">加载失败：已自动尝试获取最新地址，请再点一次「加载结果」；若仍失败请整页刷新后重试</div>';
 }
 function render(data,pwd){
   document._rd=data;
