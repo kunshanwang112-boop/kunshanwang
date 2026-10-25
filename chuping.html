@@ -323,15 +323,41 @@ async function submit(){
   }
   doSubmit(judge,scores);
 }
+function submitDone(judge,scores){
+  try{ const snap={judge:judge, scores:{}}; scores.forEach(sc=>{ snap.scores[sc.case]={dims:(sc.dims||{}), total:sc.total}; }); localStorage.setItem('scoring_last_'+ROUND, JSON.stringify(snap)); localStorage.removeItem('scoring_draft_'+ROUND);}catch(e){}
+  location.replace('thanks.html?j='+encodeURIComponent(judge));
+}
+const CDN_CFG='https://cdn.jsdelivr.net/gh/kunshanwang112-boop/kunshanwang@main/config.js';
+async function fetchLatestBackend(){
+  const urls=[CDN_CFG+'?ts='+Date.now(), 'config.js?ts='+Date.now()];
+  for(const u of urls){
+    try{ const r=await fetch(u,{cache:'no-store'}); if(!r.ok) continue; const t=await r.text(); const m=t.match(/BACKEND_URL:\s*"([^"]+)"/); if(m&&m[1]) return m[1]; }catch(e){}
+  }
+  return null;
+}
+function tryPost(url,body){
+  return fetch(url+'/api/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json());
+}
 async function doSubmit(judge,scores){
   const body={round:ROUND,judge,scores};
   const btn=document.querySelector('.submit-btn'); btn.disabled=true;
   try{
-    const r=await fetch(SCORING.BACKEND_URL+'/api/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    const j=await r.json();
-    if(j.ok){ try{ const snap={judge:judge, scores:{}}; scores.forEach(sc=>{ snap.scores[sc.case]={dims:(sc.dims||{}), total:sc.total}; }); localStorage.setItem('scoring_last_'+ROUND, JSON.stringify(snap)); localStorage.removeItem('scoring_draft_'+ROUND);}catch(e){} location.replace('thanks.html?j='+encodeURIComponent(judge)); return; }
-    flash(j.msg,'err');
-  }catch(e){ flash('提交失败，请检查网络','err'); }
+    const j=await tryPost(SCORING.BACKEND_URL,body);
+    if(j.ok){ submitDone(judge,scores); return; }
+    flash(j.msg,'err'); btn.disabled=false; return;
+  }catch(e){}
+  for(let i=1;i<=6;i++){
+    flash('网络波动，正在自动恢复（第'+i+'/6次，请勿关闭页面）...','err');
+    const nu=await fetchLatestBackend();
+    if(nu) SCORING.BACKEND_URL=nu;
+    try{
+      const j=await tryPost(SCORING.BACKEND_URL,body);
+      if(j.ok){ submitDone(judge,scores); return; }
+      flash(j.msg,'err'); btn.disabled=false; return;
+    }catch(e){}
+    await new Promise(rs=>setTimeout(rs,8000));
+  }
+  flash('提交失败：请过10秒后再点一次提交；分数已自动保存不会丢失','err');
   btn.disabled=false;
 }
 function flash(msg,type){
