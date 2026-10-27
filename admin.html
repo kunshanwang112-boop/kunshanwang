@@ -96,12 +96,13 @@ small.dim-head{color:#9aa5b1;font-weight:400}
 </style></head>
 <body><div class="wrap">
 <h1>评分统计管理台</h1>
-<div class="toolbar"><button class="refresh" onclick="location.reload()">刷新</button> <a href="index.html">← 返回首页</a></div>
+<div class="toolbar"><button class="refresh" onclick="location.reload()">刷新</button> <a href="chuping.html" style="border:1px solid #c00000;border-radius:6px;padding:8px 14px;color:#c00000;text-decoration:none;font-size:14px">初评表单（只读查阅）</a> <a href="fushen.html" style="border:1px solid #c00000;border-radius:6px;padding:8px 14px;color:#c00000;text-decoration:none;font-size:14px">复审表单（只读查阅）</a> <a href="index.html">← 返回首页</a></div>
 <div class="pwd"><input type="password" id="pwd" placeholder="管理口令"><button class="refresh" onclick="load(true)">加载结果</button></div>
 <div id="blocks"></div>
 <div class="note">计分口径：每案例取全部评委总分，去掉一个最高分和一个最低分后取平均（评委≤2直接平均）；同名评委多次提交自动合并（同一案例以最新一次为准）；去极值后保留两位小数。</div>
 </div>
 <script src="config.js"></script>
+<script src="gate.js"></script>
 <script>
 function e(id){return document.getElementById(id);}
 async function loadLatestBackend(){
@@ -190,7 +191,7 @@ function render(data,pwd){
   html+='<div class="block"><h2>评审打分二维码</h2><div class="qr-row">';
   for(const rk in data){
     const rd=data[rk];
-    html+='<div><img class="qr-img" src="'+SCORING.BACKEND_URL+'/qr/'+rk+'" alt="'+rd.round_name+'"><div style="font-size:12px;color:#6b7788;margin-top:4px">'+rd.round_name+' · 扫码打分</div></div>';
+    html+='<div><img class="qr-img" src="'+SCORING.BACKEND_URL+'/qr/'+rk+'" alt="'+rd.round_name+'"><div style="font-size:12px;color:#6b7788;margin-top:4px">'+rd.round_name+'（入口已关闭·存档展示）</div></div>';
   }
   html+='</div></div>';
   box.innerHTML=html;
