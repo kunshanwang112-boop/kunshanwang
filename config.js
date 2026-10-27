@@ -1,2 +1,2 @@
 // 部署后端后，把这里改成后端公网地址，例如 https://xxx.onrender.com（末尾不要带斜杠）
-const SCORING = { BACKEND_URL: "https://76970b75.r7.cpolar.cn" };
+const SCORING = { BACKEND_URL: "https://51e8993b.r33.cpolar.top" };
